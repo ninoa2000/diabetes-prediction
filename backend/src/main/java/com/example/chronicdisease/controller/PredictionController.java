@@ -133,9 +133,29 @@ public class PredictionController {
         ));
     }
 
-    @PostMapping("/{caseId}")
-    public ResponseEntity<PredictionResult> predict(@PathVariable String caseId) {
-        PredictionResult result = predictionService.predict(caseId);
-        return ResponseEntity.ok(result);
+    @PostMapping("/cases/{caseId}/results")
+    public ResponseEntity<?> updatePredictionResults(
+            @PathVariable String caseId, 
+            @RequestHeader("X-User-ID") String userId,
+            @RequestBody Map<String, Object> requestData) {
+            
+        if (userId == null || userId.isEmpty()) {
+            return ResponseEntity.badRequest().body("User ID cannot be empty");
+        }
+        
+        PredictionRecord record = predictionRecordRepository.findById(caseId)
+            .orElseThrow(() -> new RuntimeException("Record does not exist"));
+            
+        if (!userId.equals(record.getUserId())) {
+            return ResponseEntity.status(403).body("No permission to update this record");
+        }
+        
+        if (requestData.containsKey("algorithm")) record.setAlgorithm(requestData.get("algorithm").toString());
+        if (requestData.containsKey("disease")) record.setDisease(requestData.get("disease").toString());
+        if (requestData.containsKey("probability")) record.setProbability(Double.parseDouble(requestData.get("probability").toString()));
+        if (requestData.containsKey("suggestion")) record.setSuggestion(requestData.get("suggestion").toString());
+        
+        predictionRecordRepository.save(record);
+        return ResponseEntity.ok(record);
     }
 } 

@@ -457,6 +457,16 @@ const predictCase = async (caseData) => {
     predictionDisease.value = response.data.disease
     predictionSuggestion.value = response.data.suggestion
 
+    // Save the results back to the database for this existing record
+    if (caseData.id) {
+      await predictionService.updateCaseResults(caseData.id, {
+        algorithm: selectedModel,
+        disease: response.data.disease,
+        probability: response.data.probability,
+        suggestion: response.data.suggestion
+      })
+    }
+
     try {
       await loadCases()
     } catch (e) {

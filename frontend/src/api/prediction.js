@@ -77,9 +77,9 @@ export const predictionService = {
     return apiClient.delete(`/cases/${caseId}`)
   },
 
-  // Predict using Spring Boot endpoint (if you still use it)
-  predictDisease(recordId) {
-    return apiClient.post(`/${recordId}/predict`)
+  // Update case results after predicting
+  updateCaseResults(caseId, results) {
+    return apiClient.post(`/cases/${caseId}/results`, results)
   },
 
   // ✅ Predict using Flask with a chosen model
