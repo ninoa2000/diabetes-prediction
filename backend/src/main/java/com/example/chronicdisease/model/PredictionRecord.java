@@ -15,6 +15,8 @@ public class PredictionRecord {
     
     private String userId;
     private String patientId;
+    private String fileName;
+    private String algorithm;
     private Map<String, Object> healthData;
     private String disease;
     private Double probability;

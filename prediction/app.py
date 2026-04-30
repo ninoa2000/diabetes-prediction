@@ -33,97 +33,66 @@ MODEL_FILES = {
 MODEL_CACHE = {}
 
 # -----------------------------
-# Mapping: Chinese -> English canonical feature names
+# Mapping: Excel Header -> Internal Canonical Name
 # -----------------------------
+# We keep these EXACTLY as they appear in your Excel screenshot
 cn_to_eng = {
-    '性别': 'Sex',
-    '年龄': 'Year',
-    '癸酸': 'Decanoric Acid',
-    '月桂酸': 'Laurric Acid',
-    '肉豆蔻酸': 'Myristoleic Acid',
-    '顺-9-十四碳烯酸': 'Myristic Acid',
-    '棕榈酸': 'Palmitoleic Acid',
-    '棕榈油酸': 'Palmitic Acid',
-    'α-亚麻酸': 'Linolenic Acid',
-    '亚油酸': 'Linoleic Acid',
-    '油酸': 'Oleic Acid',
-    '硬脂酸': 'Stearic Acid',
-    '二十碳五烯酸': 'EPA',
-    '二十碳四烯酸': 'Arachidonic Acid',
-    '二十碳三烯酸': 'Mead Acid',
-    '二十碳二烯酸': 'Eicosadienoic Acid',
-    '二十碳一烯酸': 'Eicosenoic Acid',
-    '二十碳酸': 'Arachidic Acid',
-    '二十二碳六烯酸': 'DHA',
-    '二十二碳五烯酸': 'DPA',
-    '二十二碳四烯酸': 'DTA',
-    '二十二碳一烯酸': 'Erucic Acid',
-    '二十二碳酸': 'Behenic Acid',
-    '二十四碳一烯酸': 'Nervonic Acid',
-    '二十四碳酸': 'Lignocerric Acid',
-    'ω-3/ω-6 比值': 'w3/w6',
-    '三烯/四烯比': 'Triene /Tetraene',
-    '总饱和脂肪酸': 'Total SFA',
-    '总单不饱和脂肪酸': 'Total MUFA',
-    '总多不饱和脂肪酸': 'Total PUFA',
-    '总 ω-3': 'T w3',
-    '总 ω-6': 'T w6',
-    '总脂肪酸': 'Total FA'
-}
-
-# English aliases for normalization (helpful if payload uses "Age" instead of "Year", etc.)
-english_aliases = {
-    "Age": "Year",
-    "Decanoic Acid": "Decanoric Acid",
-    "Lauric Acid": "Laurric Acid",
-    "Myristic Acid": "Myristic Acid", # Careful: 肉豆蔻酸 is Myristoleic in SVM.py
-    "Palmitic Acid": "Palmitic Acid",
-    "Eicosapentaenoic Acid": "EPA",
-    "Docosahexaenoic Acid": "DHA",
-    "Docosapentaenoic Acid": "DPA",
-    "Docosatetraenoic Acid": "DTA",
-    "Lignoceric Acid": "Lignocerric Acid",
-    "Triene/Tetraene": "Triene /Tetraene",
+    'Age': 'Age',
+    'Sex': 'Sex',
+    'Decanoic.': 'Decanoic.',
+    'Lauric Aci': 'Lauric Aci',
+    'Myristole': 'Myristole',
+    'Myristic A': 'Myristic A',
+    'Palmitole': 'Palmitole',
+    'Palmitic A': 'Palmitic A',
+    'Linolenic.': 'Linolenic.',
+    'Linoleic A': 'Linoleic A',
+    'Oleic Acid': 'Oleic Acid',
+    'Stearic Ac': 'Stearic Ac',
+    'EPA': 'EPA',
+    'Arachidor': 'Arachidor',
+    'Mead Acid': 'Mead Acid',
+    'Eicosadie': 'Eicosadie',
+    'Eicosenoi': 'Eicosenoi',
+    'Arachidic': 'Arachidic',
+    'DHA': 'DHA',
+    'DPA': 'DPA',
+    'DTA': 'DTA',
+    'Erucic Aci': 'Erucic Aci',
+    'Behenic A': 'Behenic A',
+    'Nervonic.': 'Nervonic.',
+    'Lignoceric': 'Lignoceric',
+    'w3/w6': 'w3/w6',
+    'Triene /Te': 'Triene /Te',
+    'Total SFA': 'Total SFA',
+    'Total MUF': 'Total MUF',
+    'Total PUFA': 'Total PUFA',
+    'T w3': 'T w3',
+    'T w6': 'T w6',
+    'Total FA': 'Total FA'
 }
 
 def to_float(v):
     try:
         if v is None or v == "": return 0.0
-        return float(v)
+        return float(str(v).replace(',', '').strip())
     except (TypeError, ValueError):
         return 0.0
 
 def build_processed_features(payload: dict):
     """
-    Converts incoming payload into a canonical {EnglishFeatureName: float} dict.
-    We prioritize Chinese mapping, then English aliases.
+    Directly maps payload keys using the cn_to_eng mapping.
     """
     processed = {}
-
-    # 1. Start with English keys in payload (normalized)
     for k, v in payload.items():
-        if k in ("result", "label", "target", "modelType", "userId", "id"):
-            continue
-        canonical = english_aliases.get(k, k)
+        # Map if possible, otherwise keep original
+        canonical = cn_to_eng.get(k, k)
         processed[canonical] = to_float(v)
-
-    # 2. Overwrite/add with Chinese mapping (canonical)
-    for cn_key, eng_key in cn_to_eng.items():
-        if cn_key in payload:
-            processed[eng_key] = to_float(payload.get(cn_key))
-
     return processed
 
-# Fallback feature list based on SVM.py training
-CANONICAL_FEATURES = [
-    'Sex', 'Year', 'Decanoric Acid', 'Laurric Acid', 'Myristoleic Acid',
-    'Myristic Acid', 'Palmitoleic Acid', 'Palmitic Acid', 'Linolenic Acid',
-    'Linoleic Acid', 'Oleic Acid', 'Stearic Acid', 'EPA', 'Arachidonic Acid',
-    'Mead Acid', 'Eicosadienoic Acid', 'Eicosenoic Acid', 'Arachidic Acid',
-    'DHA', 'DPA', 'DTA', 'Erucic Acid', 'Behenic Acid', 'Nervonic Acid',
-    'Lignocerric Acid', 'w3/w6', 'Triene /Tetraene', 'Total SFA', 'Total MUFA',
-    'Total PUFA', 'T w3', 'T w6', 'Total FA'
-]
+# Canonical feature list (Backup only)
+CANONICAL_FEATURES = list(cn_to_eng.values())
+
 
 def unwrap_model_package(raw):
     """
@@ -204,8 +173,9 @@ def predict():
         # 2. Build input vector
         X = np.array([[processed.get(name, 0.0) for name in ordered_keys]], dtype=float)
 
-        # 3. Apply scaler if present
-        if scaler is not None:
+        # 3. Apply scaler if present (Rule: StandardScaler for SVM/MLP, no scaling for tree-based models)
+        tree_based_models = ["xgboost", "decision_tree", "random_forest", "rf", "dt", "xgb"]
+        if scaler is not None and model_type not in tree_based_models:
             try:
                 X = scaler.transform(X)
             except Exception as se:

@@ -1,23 +1,27 @@
 <template>
   <div class="prediction-form">
-    <el-card class="box-card">
+    <el-card class="box-card custom-card">
       <template #header>
         <div class="card-header">
-          <span>Health Prediction</span>
+          <div class="header-title">
+            <el-icon class="header-icon"><Monitor /></el-icon>
+            <span>Health Prediction</span>
+          </div>
 
           <!-- Model dropdown -->
           <div class="model-select">
             <span class="model-label">Model:</span>
             <el-select
               v-model="modelType"
-              size="small"
+              size="default"
               style="width: 180px"
               @change="saveModelType"
+              class="custom-select"
             >
               <el-option label="SVM" value="svm" />
               <el-option label="XGBoost" value="xgboost" />
               <el-option label="Random Forest" value="random_forest" />
-              <el-option label="MLP" value="mlp" />
+              <el-option label="Deep Neural Network" value="mlp" />
               <el-option label="Decision Tree" value="decision_tree" />
             </el-select>
           </div>
@@ -46,47 +50,56 @@
 
       <div v-if="previewData.length > 0" class="preview-section">
         <div class="preview-header">
-          <h3>Data Preview</h3>
-          <el-button link type="primary" @click="clearPreview">
-            <el-icon><refresh /></el-icon>
-            Re-upload
+          <div class="preview-title-group">
+            <h3>Patient Data Overview</h3>
+            <el-tag type="primary" size="default" effect="light" class="file-tag" v-if="uploadedFileName">
+              <el-icon><Document /></el-icon> {{ uploadedFileName }}
+            </el-tag>
+          </div>
+          <el-button plain type="primary" @click="clearPreview" class="reupload-btn">
+            <el-icon><Refresh /></el-icon>
+            Upload Different File
           </el-button>
         </div>
 
         <div class="data-preview">
-          <div class="data-row" v-for="(row, rowIndex) in chunkedData" :key="rowIndex">
-            <div v-for="(value, key) in row" :key="key" class="data-item">
-              <div class="data-label">{{ key }}：</div>
-              <el-input
-                v-model="previewData[0][key]"
-                type="textarea"
-                :autosize="{ minRows: 1, maxRows: 4 }"
-                resize="none"
-                class="data-value"
-              />
-            </div>
+          <div v-for="(value, key) in previewData[0]" :key="key" class="data-item">
+            <div class="data-label">{{ key }}</div>
+            <el-input
+              v-model="previewData[0][key]"
+              size="default"
+              class="data-value"
+            />
           </div>
         </div>
 
         <div class="preview-actions">
           <el-button
-            type="warning"
+            type="info"
+            plain
+            size="large"
             @click="compareAlgorithms"
+            class="action-btn"
           >
-            Algorithm Comparison
-          </el-button>
-          <el-button
-            type="success"
-            @click="predictDirectly"
-          >
-            Direct Predict
+            <el-icon><DataAnalysis /></el-icon> Compare Algorithms
           </el-button>
           <el-button
             v-if="!selectedCase?.disease"
             type="primary"
+            plain
+            size="large"
             @click="submitData"
+            class="action-btn"
           >
-            Save medical record
+            <el-icon><Collection /></el-icon> Save Record
+          </el-button>
+          <el-button
+            type="success"
+            size="large"
+            @click="predictDirectly"
+            class="action-btn predict-btn"
+          >
+            <el-icon><MagicStick /></el-icon> Run Prediction
           </el-button>
         </div>
       </div>
@@ -94,10 +107,22 @@
       <!-- Case List -->
       <div v-if="!previewData.length && cases.length > 0" class="cases-section">
         <h3>Saved Medical Records</h3>
-        <el-table :data="cases" style="width: 100%" v-loading="loading">
+        <el-table :data="cases" style="width: 100%" v-loading="loading" border stripe>
           <el-table-column prop="createdAt" label="Upload Time" width="180">
             <template #default="scope">
               {{ formatDate(scope.row.createdAt) }}
+            </template>
+          </el-table-column>
+          <el-table-column prop="fileName" label="File Name" min-width="150">
+            <template #default="scope">
+              <span v-if="scope.row.fileName">{{ scope.row.fileName }}</span>
+              <span v-else style="color: #999;">Manual Input</span>
+            </template>
+          </el-table-column>
+          <el-table-column prop="algorithm" label="Algorithm" width="150">
+            <template #default="scope">
+              <el-tag v-if="scope.row.algorithm" type="info">{{ scope.row.algorithm.toUpperCase().replace('_', ' ') }}</el-tag>
+              <span v-else style="color: #999;">None</span>
             </template>
           </el-table-column>
           <el-table-column prop="disease" label="Prediction Result">
@@ -133,6 +158,13 @@
       <!-- Case Details Dialog -->
       <el-dialog v-model="caseDialogVisible" title="Medical record details" width="70%">
         <div v-if="selectedCase" class="case-details">
+          <div class="metadata-section" style="margin-bottom: 20px;">
+            <el-descriptions border :column="2">
+              <el-descriptions-item label="File Name">{{ selectedCase.fileName || 'Manual Input' }}</el-descriptions-item>
+              <el-descriptions-item label="Algorithm">{{ selectedCase.algorithm ? selectedCase.algorithm.toUpperCase().replace('_', ' ') : 'N/A' }}</el-descriptions-item>
+            </el-descriptions>
+          </div>
+          
           <div class="data-row" v-for="(row, rowIndex) in chunkedCaseData" :key="rowIndex">
             <div v-for="(value, key) in row" :key="key" class="data-item">
               <div class="data-label">{{ key }}</div>
@@ -242,12 +274,13 @@
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { UploadFilled, Refresh } from '@element-plus/icons-vue'
+import { UploadFilled, Refresh, Document, Monitor, DataAnalysis, Collection, MagicStick } from '@element-plus/icons-vue'
 import * as XLSX from 'xlsx'
 import * as echarts from 'echarts'
 import { predictionService } from '@/api/prediction'
 
 const expectedColumns = 35
+const uploadedFileName = ref('')
 const previewData = ref([])
 const cases = ref([])
 const loading = ref(false)
@@ -273,21 +306,8 @@ const saveModelType = (val) => {
   localStorage.setItem('modelType', val)
 }
 
-// Data grouping for display
-const chunkedData = computed(() => {
-  if (!previewData.value.length) return []
-
-  const items = Object.entries(previewData.value[0])
-  const result = []
-  for (let i = 0; i < items.length; i += 3) {
-    const chunk = {}
-    items.slice(i, i + 3).forEach(([key, value]) => {
-      chunk[key] = value
-    })
-    result.push(chunk)
-  }
-  return result
-})
+// Data grouping for display is no longer needed because we use CSS Grid directly on the object.
+// We removed chunkedData entirely.
 
 // Case details grouping
 const chunkedCaseData = computed(() => {
@@ -306,6 +326,7 @@ const chunkedCaseData = computed(() => {
 })
 
 const handleFileChange = (file) => {
+  uploadedFileName.value = file.name
   const reader = new FileReader()
   reader.onload = (e) => {
     const wb = XLSX.read(e.target.result, { type: 'array' })
@@ -315,12 +336,14 @@ const handleFileChange = (file) => {
     const actualColumns = range.e.c - range.s.c + 1
     if (actualColumns !== expectedColumns) {
       ElMessage.error('Data mismatch, please check the file columns')
+      uploadedFileName.value = ''
       return
     }
 
     const jsonData = XLSX.utils.sheet_to_json(ws, { defval: null })
     if (!jsonData.length) {
       ElMessage.error('Excel file is empty')
+      uploadedFileName.value = ''
       return
     }
     previewData.value = [jsonData[0]]
@@ -330,6 +353,7 @@ const handleFileChange = (file) => {
 
 const clearPreview = () => {
   previewData.value = []
+  uploadedFileName.value = ''
   loadCases()
 }
 
@@ -349,7 +373,12 @@ const submitData = async () => {
 
     const requestData = {
       ...previewData.value[0],
-      userId: user.id
+      userId: user.id,
+      fileName: uploadedFileName.value || null,
+      algorithm: predictionDisease.value ? modelType.value : null,
+      disease: predictionDisease.value || null,
+      probability: predictionPercentage.value > 0 ? predictionPercentage.value / 100 : null,
+      suggestion: predictionSuggestion.value || null
     }
 
     await predictionService.saveHealthData(requestData)
@@ -403,9 +432,6 @@ const formattedSuggestion = computed(() => {
 
 const closePredictionDialog = () => {
   predictionDialogVisible.value = false
-  predictionPercentage.value = 0
-  predictionDisease.value = ''
-  predictionSuggestion.value = ''
   if (predictionInterval.value) clearInterval(predictionInterval.value)
 }
 
@@ -535,21 +561,13 @@ const initComparisonChart = () => {
 
 const deleteCase = async (caseData) => {
   try {
-    await ElMessageBox.confirm('Are you sure you want to delete this medical record?', 'Notice', {
-      confirmButtonText: 'Confirm',
-      cancelButtonText: 'Cancel',
-      type: 'warning'
-    })
-
     loading.value = true
     await predictionService.deleteCase(caseData.id)
     await loadCases()
     ElMessage.success('Deleted successfully')
   } catch (error) {
-    if (error !== 'cancel') {
-      console.error('Delete failed:', error)
-      ElMessage.error(error.message || 'Delete failed')
-    }
+    console.error('Delete failed:', error)
+    ElMessage.error(error.message || 'Delete failed')
   } finally {
     loading.value = false
   }
@@ -571,94 +589,187 @@ onBeforeUnmount(() => {
 
 <style scoped>
 .prediction-form {
-  max-width: 800px;
+  width: 100%;
   margin: 20px auto;
+}
+
+.custom-card {
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(149, 157, 165, 0.1) !important;
+  border: none;
 }
 
 .card-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  padding: 5px 0;
 }
 
-/* ✅ model dropdown */
+.header-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 20px;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.header-icon {
+  color: var(--el-color-primary);
+  font-size: 24px;
+}
+
 .model-select {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
+  background: #f8fafc;
+  padding: 6px 16px;
+  border-radius: 20px;
+  border: 1px solid #e2e8f0;
 }
 
 .model-label {
-  color: #606266;
-  font-size: 13px;
+  color: #475569;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.custom-select :deep(.el-input__wrapper) {
+  box-shadow: none !important;
+  background: transparent;
 }
 
 .upload-demo {
   width: 100%;
 }
 
+:deep(.el-upload-dragger) {
+  width: 100%;
+  padding: 40px;
+  border-radius: 12px;
+  background-color: #f8fafc;
+  border: 2px dashed #cbd5e1;
+  transition: all 0.3s ease;
+}
+
+:deep(.el-upload-dragger:hover) {
+  border-color: var(--el-color-primary);
+  background-color: #f0f9ff;
+}
+
 .preview-section, .cases-section {
-  margin-top: 20px;
+  margin-top: 25px;
 }
 
 .preview-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 15px;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 2px solid #f1f5f9;
 }
 
-.preview-header h3, .cases-section h3 {
+.preview-title-group {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.preview-title-group h3 {
   margin: 0;
-  font-size: 16px;
-  font-weight: 600;
+  font-size: 18px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.file-tag {
+  font-size: 14px;
+  padding: 4px 12px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.reupload-btn {
+  border-radius: 20px;
 }
 
 .data-preview {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
   gap: 16px;
-  margin-bottom: 20px;
-}
-
-.data-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 20px;
-  margin-bottom: 20px;
+  margin-bottom: 30px;
+  background: #f8fafc;
+  padding: 24px;
+  border-radius: 16px;
+  border: 1px solid #e2e8f0;
 }
 
 .data-item {
-  flex: 1;
-  min-width: 200px;
   display: flex;
-  align-items: center;
-  gap: 10px;
+  flex-direction: column;
+  gap: 8px;
+  background: white;
+  padding: 12px 16px;
+  border-radius: 10px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  border: 1px solid #f1f5f9;
+}
+
+.data-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  border-color: #e2e8f0;
 }
 
 .data-label {
-  width: 100px;
-  text-align: right;
-  color: #606266;
+  font-size: 12px;
+  color: #64748b;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .data-value {
-  flex: 1;
-  color: #303133;
+  width: 100%;
+}
+
+.data-value :deep(.el-input__wrapper) {
+  box-shadow: none;
+  background: #f8fafc;
+  border-radius: 6px;
 }
 
 .preview-actions {
   display: flex;
   justify-content: flex-end;
+  gap: 16px;
+  padding-top: 10px;
+}
+
+.action-btn {
+  border-radius: 8px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.predict-btn {
+  padding: 0 24px;
+  box-shadow: 0 4px 12px rgba(103, 194, 58, 0.3);
 }
 
 .el-upload__tip {
-  margin-top: 10px;
-  color: #666;
-}
-
-:deep(.el-upload-dragger) {
-  width: 100%;
+  margin-top: 15px;
+  color: #64748b;
+  font-size: 13px;
+  text-align: center;
 }
 
 .case-details {

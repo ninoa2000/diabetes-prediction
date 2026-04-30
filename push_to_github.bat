@@ -23,7 +23,7 @@ echo --- Adding files ---
 git add .
 
 echo --- Committing ---
-git commit -m "Initial commit"
+git commit -m "Added AI algorithm and filename tracking to medical records"
 
 echo --- Pushing to GitHub (Main Branch) ---
 git branch -M main

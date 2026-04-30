@@ -6,3 +6,10 @@ requests==2.31.0
 xgboost==3.0.0
 numpy==2.2.5
 scipy==1.15.2
+scikit-learn
+tensorflow
+shap
+matplotlib
+seaborn
+openpyxl
+scikeras

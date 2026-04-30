@@ -30,8 +30,25 @@ public class PredictionController {
             return ResponseEntity.badRequest().body("User ID cannot be empty");
         }
         
-        // Remove userId from health data
+        // Extract additional metadata
+        Object fileNameObj = requestData.get("fileName");
+        String fileName = fileNameObj != null ? fileNameObj.toString() : null;
+        Object algorithmObj = requestData.get("algorithm");
+        String algorithm = algorithmObj != null ? algorithmObj.toString() : null;
+        Object diseaseObj = requestData.get("disease");
+        String disease = diseaseObj != null ? diseaseObj.toString() : null;
+        Object probabilityObj = requestData.get("probability");
+        Double probability = probabilityObj != null ? Double.parseDouble(probabilityObj.toString()) : null;
+        Object suggestionObj = requestData.get("suggestion");
+        String suggestion = suggestionObj != null ? suggestionObj.toString() : null;
+        
+        // Remove metadata from health data to keep it clean
         requestData.remove("userId");
+        requestData.remove("fileName");
+        requestData.remove("algorithm");
+        requestData.remove("disease");
+        requestData.remove("probability");
+        requestData.remove("suggestion");
         
         log.debug("Saving health data for user: {}", userId);
         
@@ -39,6 +56,11 @@ public class PredictionController {
         PredictionRecord record = new PredictionRecord();
         record.setHealthData(requestData);
         record.setUserId(userId);
+        record.setFileName(fileName);
+        record.setAlgorithm(algorithm);
+        record.setDisease(disease);
+        record.setProbability(probability);
+        record.setSuggestion(suggestion);
         
         // Save record
         PredictionRecord savedRecord = predictionRecordRepository.save(record);
