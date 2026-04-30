@@ -1,0 +1,3 @@
+prediction:
+  api:
+    url: http://localhost:5000 
