@@ -6,8 +6,8 @@
         <el-card class="welcome-card" shadow="hover">
           <div class="welcome-content">
             <div class="welcome-text">
-              <h2>欢迎使用糖尿病预测系统</h2>
-              <p>基于先进的机器学习算法，通过分析您的健康检查数据，预测糖尿病的风险。</p>
+              <h2>Welcome to the Diabetes Prediction System</h2>
+              <p>Based on advanced machine learning algorithms, we predict the risk of diabetes by analyzing your health inspection data.</p>
             </div>
           </div>
         </el-card>
@@ -20,8 +20,8 @@
         <el-card class="feature-card" shadow="hover">
           <div class="feature-content">
             <el-icon class="feature-icon"><Timer /></el-icon>
-            <h3>快速预测</h3>
-            <p>只需上传检查报告，即可快速获得预测结果</p>
+            <h3>Fast Prediction</h3>
+            <p>Just upload the inspection report to get prediction results quickly</p>
           </div>
         </el-card>
       </el-col>
@@ -30,8 +30,8 @@
         <el-card class="feature-card" shadow="hover">
           <div class="feature-content">
             <el-icon class="feature-icon"><Document /></el-icon>
-            <h3>专业建议</h3>
-            <p>根据预测结果，提供专业的健康建议</p>
+            <h3>Professional Suggestions</h3>
+            <p>Provide professional health suggestions based on the prediction results</p>
           </div>
         </el-card>
       </el-col>
@@ -40,8 +40,8 @@
         <el-card class="feature-card" shadow="hover">
           <div class="feature-content">
             <el-icon class="feature-icon"><Lock /></el-icon>
-            <h3>数据安全</h3>
-            <p>严格保护您的个人健康数据</p>
+            <h3>Data Security</h3>
+            <p>Strictly protect your personal health data</p>
           </div>
         </el-card>
       </el-col>
@@ -53,14 +53,14 @@
         <el-card class="guide-card" shadow="hover">
           <template #header>
             <div class="card-header">
-              <h3>使用指南</h3>
+              <h3>User Guide</h3>
             </div>
           </template>
           <el-steps :active="4" finish-status="success" align-center>
-            <el-step title="准备数据" description="准备您的健康检查报告（Excel格式）" />
-            <el-step title="上传报告" description="点击'健康预测'菜单上传检查报告" />
-            <el-step title="查看结果" description="系统自动分析并生成预测结果" />
-            <el-step title="获取建议" description="根据预测结果获取专业的健康建议" />
+            <el-step title="Prepare Data" description="Prepare your health inspection report (Excel format)" />
+            <el-step title="Upload Report" description="Click 'Prediction' menu to upload report" />
+            <el-step title="View Results" description="System automatically analyzes and generates results" />
+            <el-step title="Get Suggestions" description="Get professional health suggestions based on results" />
           </el-steps>
         </el-card>
       </el-col>

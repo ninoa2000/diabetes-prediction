@@ -22,25 +22,25 @@ public class PredictionController {
 
     @PostMapping
     public ResponseEntity<?> saveHealthData(@RequestBody Map<String, Object> requestData) {
-        // 从请求数据中获取用户ID
+        // Get userId from request
         Object userIdObj = requestData.get("userId");
         String userId = userIdObj != null ? userIdObj.toString() : null;
         
         if (userId == null || userId.isEmpty()) {
-            return ResponseEntity.badRequest().body("用户ID不能为空");
+            return ResponseEntity.badRequest().body("User ID cannot be empty");
         }
         
-        // 从请求数据中移除userId，保留其他健康数据
+        // Remove userId from health data
         requestData.remove("userId");
         
         log.debug("Saving health data for user: {}", userId);
         
-        // 创建预测记录
+        // Create prediction record
         PredictionRecord record = new PredictionRecord();
         record.setHealthData(requestData);
         record.setUserId(userId);
         
-        // 保存病例记录
+        // Save record
         PredictionRecord savedRecord = predictionRecordRepository.save(record);
 
         return ResponseEntity.ok(savedRecord);
@@ -49,12 +49,12 @@ public class PredictionController {
     @GetMapping("/cases")
     public ResponseEntity<?> getHealthCases(@RequestHeader("X-User-ID") String userId) {
         if (userId == null || userId.isEmpty()) {
-            return ResponseEntity.badRequest().body("用户ID不能为空");
+            return ResponseEntity.badRequest().body("User ID cannot be empty");
         }
         
         log.debug("Getting health cases for user: {}", userId);
         
-        // 只获取当前用户的病例记录
+        // Get user's records
         var cases = predictionRecordRepository.findByUserIdOrderByCreatedAtDesc(userId);
         return ResponseEntity.ok(cases);
     }
@@ -62,18 +62,18 @@ public class PredictionController {
     @DeleteMapping("/cases/{caseId}")
     public ResponseEntity<?> deleteCase(@PathVariable String caseId, @RequestHeader("X-User-ID") String userId) {
         if (userId == null || userId.isEmpty()) {
-            return ResponseEntity.badRequest().body("用户ID不能为空");
+            return ResponseEntity.badRequest().body("User ID cannot be empty");
         }
         
-        // 检查病例是否存在且属于当前用户
+        // Check if record exists and belongs to user
         PredictionRecord record = predictionRecordRepository.findById(caseId)
-            .orElseThrow(() -> new RuntimeException("病例不存在"));
+            .orElseThrow(() -> new RuntimeException("Record does not exist"));
             
         if (!userId.equals(record.getUserId())) {
-            return ResponseEntity.status(403).body("无权删除此病例");
+            return ResponseEntity.status(403).body("No permission to delete this record");
         }
         
-        // 删除病例
+        // Delete record
         predictionRecordRepository.deleteById(caseId);
         return ResponseEntity.ok().build();
     }
@@ -81,29 +81,29 @@ public class PredictionController {
     @PostMapping("/{recordId}/predict")
     public ResponseEntity<?> predictDisease(@PathVariable String recordId, @RequestHeader("X-User-ID") String userId) {
         if (userId == null || userId.isEmpty()) {
-            return ResponseEntity.badRequest().body("用户ID不能为空");
+            return ResponseEntity.badRequest().body("User ID cannot be empty");
         }
         
-        // 获取病例记录并验证所有权
+        // Get record and verify ownership
         PredictionRecord record = predictionRecordRepository.findById(recordId)
-            .orElseThrow(() -> new RuntimeException("病例不存在"));
+            .orElseThrow(() -> new RuntimeException("Record does not exist"));
             
         if (!userId.equals(record.getUserId())) {
-            return ResponseEntity.status(403).body("无权访问此病例");
+            return ResponseEntity.status(403).body("No permission to access this record");
         }
 
-        // 调用Python API进行预测
+        // Call Python API
         PredictionResult result = predictionService.predict(recordId);
         
-        // 更新预测结果
+        // Update results
         record.setProbability(result.getProbability());
         record.setSuggestion(result.getSuggestion());
         record.setDisease(result.getDisease());
 
-        // 保存预测结果
+        // Save results
         predictionRecordRepository.save(record);
 
-        // 返回预测结果
+        // Return results
         return ResponseEntity.ok(Map.of(
             "probability", result.getProbability(),
             "suggestion", result.getSuggestion(),

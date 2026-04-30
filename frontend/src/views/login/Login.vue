@@ -1,7 +1,7 @@
 <template>
   <div class="login-container">
     <div class="login-box">
-      <h2 class="login-title">糖尿病预测系统</h2>
+      <h2 class="login-title">Diabetes Prediction System</h2>
       <el-form
         ref="loginFormRef"
         :model="loginForm"
@@ -9,20 +9,20 @@
         label-position="top"
         class="login-form"
       >
-        <el-form-item label="用户名" prop="username">
+        <el-form-item label="Username" prop="username">
           <el-input 
             v-model="loginForm.username"
-            placeholder="请输入用户名"
+            placeholder="Please enter username"
             prefix-icon="el-icon-user"
             clearable
           />
         </el-form-item>
         
-        <el-form-item label="密码" prop="password">
+        <el-form-item label="Password" prop="password">
           <el-input
             v-model="loginForm.password"
             type="password"
-            placeholder="请输入密码"
+            placeholder="Please enter password"
             prefix-icon="el-icon-lock"
             show-password
             @keyup.enter="handleLogin"
@@ -36,13 +36,13 @@
             class="login-button"
             @click="handleLogin"
           >
-            登录
+            Login
           </el-button>
         </el-form-item>
         
         <div class="login-footer">
-          <span>还没有账号？</span>
-          <router-link to="/register">立即注册</router-link>
+          <span>Don't have an account? </span>
+          <router-link to="/register">Register now</router-link>
         </div>
       </el-form>
     </div>
@@ -72,12 +72,12 @@ const loginForm = reactive({
 // Form validation rules
 const loginRules = reactive({
   username: [
-    { required: true, message: '请输入用户名', trigger: 'blur' },
-    { min: 3, max: 20, message: '长度在 3 到 20 个字符', trigger: 'blur' },
+    { required: true, message: 'Please enter username', trigger: 'blur' },
+    { min: 3, max: 20, message: 'Length should be 3 to 20 characters', trigger: 'blur' },
   ],
   password: [
-    { required: true, message: '请输入密码', trigger: 'blur' },
-    { min: 6, max: 20, message: '长度在 6 到 20 个字符', trigger: 'blur' },
+    { required: true, message: 'Please enter password', trigger: 'blur' },
+    { min: 6, max: 20, message: 'Length should be 6 to 20 characters', trigger: 'blur' },
   ],
 });
 
@@ -90,9 +90,9 @@ const handleLogin = async () => {
     loading.value = true;
     await userStore.login(loginForm);
     
-    ElMessage.success('登录成功');
+    ElMessage.success('Login successful');
     
-    // 根据用户角色跳转到不同页面
+    // Redirect based on role
     const userRole = localStorage.getItem('userRole');
     if (userRole === ROLE_ADMIN) {
       router.push('/admin/doctors');
@@ -102,8 +102,8 @@ const handleLogin = async () => {
       router.push('/home');
     }
   } catch (error) {
-    console.error('登录失败:', error);
-    ElMessage.error(error?.message || '登录失败');
+    console.error('Login failed:', error);
+    ElMessage.error(error?.message || 'Login failed');
   } finally {
     loading.value = false;
   }

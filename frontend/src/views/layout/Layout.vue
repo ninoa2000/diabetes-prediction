@@ -3,7 +3,7 @@
     <el-container class="layout-container">
       <el-aside width="220px" class="sidebar">
         <div class="logo">
-          <h2>糖尿病预测系统</h2>
+          <h2>Diabetes Prediction</h2>
         </div>
         <el-menu
           :default-active="activeMenu"
@@ -13,27 +13,27 @@
           text-color="#bfcbd9"
           active-text-color="#409EFF"
         >
-          <!-- 非管理员显示首页 -->
+          <!-- Non-admin Home -->
           <el-menu-item v-if="!userStore.isAdmin" index="/home">
             <el-icon><House /></el-icon>
-            <span>首页</span>
+            <span>Home</span>
           </el-menu-item>
           
           <!-- User specific menu items -->
           <template v-if="userStore.isUser">
             <el-menu-item index="/prediction">
               <el-icon><DataAnalysis /></el-icon>
-              <span>健康预测</span>
+              <span>Prediction</span>
             </el-menu-item>
             
             <el-menu-item index="/doctor-binding">
               <el-icon><User /></el-icon>
-              <span>绑定医生</span>
+              <span>Bind Doctor</span>
             </el-menu-item>
             
             <el-menu-item index="/message">
               <el-icon><Message /></el-icon>
-              <span>我的留言</span>
+              <span>Messages</span>
             </el-menu-item>
           </template>
           
@@ -41,12 +41,12 @@
           <template v-if="userStore.isDoctor">
             <el-menu-item index="/doctor/patients">
               <el-icon><User /></el-icon>
-              <span>我的患者</span>
+              <span>My Patients</span>
             </el-menu-item>
             
             <el-menu-item index="/doctor/messages">
               <el-icon><ChatDotRound /></el-icon>
-              <span>患者留言</span>
+              <span>Patient Messages</span>
             </el-menu-item>
           </template>
           
@@ -54,17 +54,17 @@
           <template v-if="userStore.isAdmin">
             <el-menu-item index="/admin/doctors">
               <el-icon><User /></el-icon>
-              <span>医生管理</span>
+              <span>Doctor Management</span>
             </el-menu-item>
             
             <el-menu-item index="/admin/users">
               <el-icon><User /></el-icon>
-              <span>用户管理</span>
+              <span>User Management</span>
             </el-menu-item>
 
             <el-menu-item index="/admin/KnowledgeManage">
               <el-icon><User /></el-icon>
-              <span>健康科普知识管理</span>
+              <span>Knowledge Management</span>
             </el-menu-item>
           </template>
           
@@ -72,24 +72,24 @@
           <el-sub-menu v-if="userStore.isUser" index="/education">
             <template #title>
               <el-icon><Document /></el-icon>
-              <span>健康科普</span>
+              <span>Education</span>
             </template>
-            <el-menu-item index="/education/disease-info">糖尿病知识</el-menu-item>
-            <el-menu-item index="/education/health-guide">健康生活指南</el-menu-item>
-            <el-menu-item index="/education/latest-research">最新研究资讯</el-menu-item>
-            <el-menu-item index="/education/seasonal-tips">健康爱好建议</el-menu-item>
+            <el-menu-item index="/education/disease-info">Diabetes Info</el-menu-item>
+            <el-menu-item index="/education/health-guide">Health Guide</el-menu-item>
+            <el-menu-item index="/education/latest-research">Latest Research</el-menu-item>
+            <el-menu-item index="/education/seasonal-tips">Health Tips</el-menu-item>
           </el-sub-menu>
           
-          <!-- 非管理员显示个人信息 -->
+          <!-- Non-admin Profile -->
           <el-menu-item v-if="!userStore.isAdmin" index="/profile">
             <el-icon><Setting /></el-icon>
-            <span>个人信息</span>
+            <span>Profile</span>
           </el-menu-item>
 
-          <!-- 非管理员显示修改密码 -->
+          <!-- Non-admin Password -->
           <el-menu-item v-if="!userStore.isAdmin" index="/user/change-password">
             <el-icon><Lock /></el-icon>
-            <span>修改密码</span>
+            <span>Change Password</span>
           </el-menu-item>
         </el-menu>
       </el-aside>
@@ -98,13 +98,13 @@
         <el-header class="header" @click="handleFirstInteraction">
           <div class="header-left">
             <el-breadcrumb separator="/">
-              <el-breadcrumb-item :to="{ path: '/' }">首页</el-breadcrumb-item>
+              <el-breadcrumb-item :to="{ path: '/' }">Home</el-breadcrumb-item>
               <el-breadcrumb-item v-if="$route.meta.title">{{ $route.meta.title }}</el-breadcrumb-item>
             </el-breadcrumb>
           </div>
           
           <div class="header-right">
-            <span class="welcome-text">欢迎您，{{ userStore.user?.name || userStore.user?.username }}</span>
+            <span class="welcome-text">Welcome, {{ userStore.user?.name || userStore.user?.username }}</span>
             <el-dropdown @command="handleCommand">
               <span class="user-dropdown">
                 <el-avatar :size="32" :src="avatarUrl" />
@@ -112,8 +112,8 @@
               </span>
               <template #dropdown>
                 <el-dropdown-menu>
-                  <el-dropdown-item v-if="!userStore.isAdmin" command="profile">个人信息</el-dropdown-item>
-                  <el-dropdown-item command="logout">退出登录</el-dropdown-item>
+                  <el-dropdown-item v-if="!userStore.isAdmin" command="profile">Profile</el-dropdown-item>
+                  <el-dropdown-item command="logout">Logout</el-dropdown-item>
                 </el-dropdown-menu>
               </template>
             </el-dropdown>
@@ -125,7 +125,7 @@
         </el-main>
         
         <el-footer class="footer">
-          © {{ currentYear }} 陈迅 - 糖尿病预测系统
+          © {{ currentYear }} Nino - Diabetes Prediction System
         </el-footer>
       </el-container>
     </el-container>

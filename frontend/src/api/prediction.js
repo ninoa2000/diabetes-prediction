@@ -92,6 +92,11 @@ export const predictionService = {
     })
   },
 
+  // ✅ Compare all 5 models at once
+  predictAllWithFlask(healthData) {
+    return flaskClient.post('/api/predict_all', healthData)
+  },
+
   // Sample data (if exists)
   getSampleData() {
     return axios.get(`${API_BASE_URL}/sample-data`)

@@ -35,21 +35,21 @@
       >
         <el-icon class="el-icon--upload"><upload-filled /></el-icon>
         <div class="el-upload__text">
-          将检查报告拖到此处，或<em>点击上传</em>
+          Drag the inspection report here, or <em>click Upload</em>
         </div>
         <template #tip>
           <div class="el-upload__tip">
-            请上传 Excel 格式的检查报告，支持 .xlsx 和 .xls 格式
+            Please upload the inspection report in Excel format, .xlsx and .xls formats are supported
           </div>
         </template>
       </el-upload>
 
       <div v-if="previewData.length > 0" class="preview-section">
         <div class="preview-header">
-          <h3>数据预览</h3>
+          <h3>Data Preview</h3>
           <el-button link type="primary" @click="clearPreview">
             <el-icon><refresh /></el-icon>
-            重新上传
+            Re-upload
           </el-button>
         </div>
 
@@ -70,44 +70,49 @@
 
         <div class="preview-actions">
           <el-button
+            type="warning"
+            @click="compareAlgorithms"
+          >
+            Algorithm Comparison
+          </el-button>
+          <el-button
+            type="success"
+            @click="predictDirectly"
+          >
+            Direct Predict
+          </el-button>
+          <el-button
             v-if="!selectedCase?.disease"
             type="primary"
             @click="submitData"
           >
-            保存病历
-          </el-button>
-          <el-button
-            v-else
-            type="success"
-            disabled
-          >
-            已预测
+            Save medical record
           </el-button>
         </div>
       </div>
 
-      <!-- 病例列表 -->
+      <!-- Case List -->
       <div v-if="!previewData.length && cases.length > 0" class="cases-section">
-        <h3>已保存的病例</h3>
+        <h3>Saved Medical Records</h3>
         <el-table :data="cases" style="width: 100%" v-loading="loading">
-          <el-table-column prop="createdAt" label="上传时间" width="180">
+          <el-table-column prop="createdAt" label="Upload Time" width="180">
             <template #default="scope">
               {{ formatDate(scope.row.createdAt) }}
             </template>
           </el-table-column>
-          <el-table-column prop="disease" label="预测结果">
+          <el-table-column prop="disease" label="Prediction Result">
             <template #default="scope">
               <span v-if="scope.row.disease">
                 {{ scope.row.disease }}
                 ({{ (scope.row.probability * 100).toFixed(2) }}%)
               </span>
-              <span v-else>未预测</span>
+              <span v-else>No prediction</span>
             </template>
           </el-table-column>
-          <el-table-column label="操作" width="280">
+          <el-table-column label="Actions" width="280">
             <template #default="scope">
               <el-button type="primary" link @click="viewCase(scope.row)">
-                查看详情
+                Details
               </el-button>
               <el-button
                 v-if="!scope.row.disease"
@@ -115,18 +120,18 @@
                 link
                 @click="predictCase(scope.row)"
               >
-                开始预测
+                Predict
               </el-button>
               <el-button type="danger" link @click="deleteCase(scope.row)">
-                删除
+                Delete
               </el-button>
             </template>
           </el-table-column>
         </el-table>
       </div>
 
-      <!-- 病例详情对话框 -->
-      <el-dialog v-model="caseDialogVisible" title="病例详情" width="70%">
+      <!-- Case Details Dialog -->
+      <el-dialog v-model="caseDialogVisible" title="Medical record details" width="70%">
         <div v-if="selectedCase" class="case-details">
           <div class="data-row" v-for="(row, rowIndex) in chunkedCaseData" :key="rowIndex">
             <div v-for="(value, key) in row" :key="key" class="data-item">
@@ -136,15 +141,15 @@
           </div>
 
           <div v-if="selectedCase.disease" class="prediction-result">
-            <h4>预测结果</h4>
+            <h4>Prediction Result</h4>
             <el-descriptions :column="1" border>
-              <el-descriptions-item label="预测疾病">
+              <el-descriptions-item label="Predicted Disease">
                 {{ selectedCase.disease }}
               </el-descriptions-item>
-              <el-descriptions-item label="预测概率">
+              <el-descriptions-item label="Probability">
                 {{ (selectedCase.probability * 100).toFixed(2) }}%
               </el-descriptions-item>
-              <el-descriptions-item label="建议">
+              <el-descriptions-item label="Suggestion">
                 {{ selectedCase.suggestion }}
               </el-descriptions-item>
             </el-descriptions>
@@ -152,10 +157,10 @@
         </div>
       </el-dialog>
 
-      <!-- 预测结果弹窗 -->
+      <!-- Prediction Result Dialog -->
       <el-dialog
         v-model="predictionDialogVisible"
-        title="预测结果"
+        title="Prediction Result"
         width="40%"
         :close-on-click-modal="false"
         :close-on-press-escape="false"
@@ -184,21 +189,51 @@
           </div>
           <div class="result-text">
             <div class="disease-info">
-              <h3>预测疾病：{{ predictionDisease }}</h3>
-              <p>预测概率：{{ predictionPercentage.toFixed(1) }}%</p>
-              <p>风险等级：{{ riskLevel }}</p>
+              <h3>Predicted Disease: {{ predictionDisease }}</h3>
+              <p>Probability: {{ predictionPercentage.toFixed(1) }}%</p>
+              <p>Risk Level: {{ riskLevel }}</p>
             </div>
             <div class="suggestion-box">
-              <h3>健康建议</h3>
+              <h3>Health Suggestion</h3>
               <div class="suggestion-content" v-html="formattedSuggestion"></div>
             </div>
           </div>
         </div>
         <template #footer>
           <span class="dialog-footer">
-            <el-button @click="closePredictionDialog">关闭</el-button>
+            <el-button @click="closePredictionDialog">Close</el-button>
           </span>
         </template>
+      </el-dialog>
+
+      <!-- Algorithm Comparison Dialog -->
+      <el-dialog
+        v-model="comparisonDialogVisible"
+        title="Algorithm Comparison Analysis"
+        width="60%"
+        @opened="initComparisonChart"
+      >
+        <div class="comparison-container">
+          <div ref="comparisonChartRef" style="width: 100%; height: 400px;"></div>
+          
+          <div class="comparison-table">
+            <el-table :data="comparisonTableData" stripe style="width: 100%">
+              <el-table-column prop="algo" label="Algorithm" />
+              <el-table-column prop="prob" label="Probability">
+                <template #default="scope">
+                  {{ (scope.row.prob * 100).toFixed(2) }}%
+                </template>
+              </el-table-column>
+              <el-table-column prop="label" label="Prediction">
+                <template #default="scope">
+                  <el-tag :type="scope.row.prob >= 0.5 ? 'danger' : 'success'">
+                    {{ scope.row.label }}
+                  </el-tag>
+                </template>
+              </el-table-column>
+            </el-table>
+          </div>
+        </div>
       </el-dialog>
     </el-card>
   </div>
@@ -209,6 +244,7 @@ import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { UploadFilled, Refresh } from '@element-plus/icons-vue'
 import * as XLSX from 'xlsx'
+import * as echarts from 'echarts'
 import { predictionService } from '@/api/prediction'
 
 const expectedColumns = 35
@@ -218,10 +254,16 @@ const loading = ref(false)
 const caseDialogVisible = ref(false)
 const selectedCase = ref(null)
 const predictionDialogVisible = ref(false)
-const predictionPercentage = ref(0)
-const predictionInterval = ref(null)
 const predictionDisease = ref('')
 const predictionSuggestion = ref('')
+const predictionPercentage = ref(0)
+const predictionInterval = ref(null)
+
+// Algorithm Comparison
+const comparisonDialogVisible = ref(false)
+const comparisonChartRef = ref(null)
+const comparisonResults = ref({})
+let comparisonChart = null
 
 /**
  * ✅ Model selection state (saved in localStorage)
@@ -231,7 +273,7 @@ const saveModelType = (val) => {
   localStorage.setItem('modelType', val)
 }
 
-// 将数据分成每行3个的数组
+// Data grouping for display
 const chunkedData = computed(() => {
   if (!previewData.value.length) return []
 
@@ -247,7 +289,7 @@ const chunkedData = computed(() => {
   return result
 })
 
-// 病例详情数据
+// Case details grouping
 const chunkedCaseData = computed(() => {
   if (!selectedCase.value?.healthData) return []
 
@@ -269,18 +311,16 @@ const handleFileChange = (file) => {
     const wb = XLSX.read(e.target.result, { type: 'array' })
     const ws = wb.Sheets[wb.SheetNames[0]]
 
-    // 1. 直接从工作表的 ref（范围）里解码出真实列数
     const range = XLSX.utils.decode_range(ws['!ref'])
     const actualColumns = range.e.c - range.s.c + 1
     if (actualColumns !== expectedColumns) {
-      ElMessage.error('上传数据缺失，请重新检查后上传')
+      ElMessage.error('Data mismatch, please check the file columns')
       return
     }
 
-    // 2. 再转成 JSON
     const jsonData = XLSX.utils.sheet_to_json(ws, { defval: null })
     if (!jsonData.length) {
-      ElMessage.error('Excel 文件为空')
+      ElMessage.error('Excel file is empty')
       return
     }
     previewData.value = [jsonData[0]]
@@ -295,7 +335,7 @@ const clearPreview = () => {
 
 const submitData = async () => {
   if (previewData.value.length === 0) {
-    ElMessage.warning('请先上传数据')
+    ElMessage.warning('Please upload data first')
     return
   }
 
@@ -303,7 +343,7 @@ const submitData = async () => {
     loading.value = true
     const user = JSON.parse(localStorage.getItem('user'))
     if (!user || !user.id) {
-      ElMessage.error('用户未登录')
+      ElMessage.error('User not logged in')
       return
     }
 
@@ -313,11 +353,11 @@ const submitData = async () => {
     }
 
     await predictionService.saveHealthData(requestData)
-    ElMessage.success('病例保存成功')
+    ElMessage.success('Medical record saved successfully')
     clearPreview()
   } catch (error) {
-    console.error('保存病例失败:', error)
-    ElMessage.error(error.message || '保存病例失败')
+    console.error('Save failed:', error)
+    ElMessage.error(error.message || 'Save failed')
   } finally {
     loading.value = false
   }
@@ -329,8 +369,8 @@ const loadCases = async () => {
     const response = await predictionService.getHealthCases()
     cases.value = response.data
   } catch (error) {
-    console.error('加载病例失败:', error)
-    ElMessage.error('加载病例失败')
+    console.error('Failed to load records:', error)
+    ElMessage.error('Failed to load records')
   } finally {
     loading.value = false
   }
@@ -341,14 +381,14 @@ const viewCase = (caseData) => {
   caseDialogVisible.value = true
 }
 
-// 计算风险等级
+// Compute risk level
 const riskLevel = computed(() => {
-  if (predictionPercentage.value < 30) return '低风险'
-  if (predictionPercentage.value < 70) return '中风险'
-  return '高风险'
+  if (predictionPercentage.value < 30) return 'Low Risk'
+  if (predictionPercentage.value < 70) return 'Medium Risk'
+  return 'High Risk'
 })
 
-// 计算进度条颜色
+// Compute progress bar color
 const customColors = computed(() => {
   if (predictionPercentage.value < 30) return '#67C23A'
   if (predictionPercentage.value < 70) return '#E6A23C'
@@ -358,7 +398,7 @@ const customColors = computed(() => {
 const format = (percentage) => percentage.toFixed(2) + '%'
 
 const formattedSuggestion = computed(() => {
-  return predictionSuggestion.value.replace(/\n/g, '<br>')
+  return predictionSuggestion.value ? predictionSuggestion.value.replace(/\n/g, '<br>') : ''
 })
 
 const closePredictionDialog = () => {
@@ -369,11 +409,6 @@ const closePredictionDialog = () => {
   if (predictionInterval.value) clearInterval(predictionInterval.value)
 }
 
-/**
- * ✅ Predict case (next step: send modelType to backend)
- * Right now, dropdown is saved in localStorage.
- * Next we will update prediction.js to pass it.
- */
 const predictCase = async (caseData) => {
   try {
     predictionDialogVisible.value = true
@@ -387,11 +422,8 @@ const predictCase = async (caseData) => {
 
     loading.value = true
 
-    // NOTE: modelType is saved in localStorage for now.
-    // Next step we will send it in API call.
     const selectedModel = localStorage.getItem('modelType') || 'svm'
     const response = await predictionService.predictWithFlask(caseData.healthData || caseData, selectedModel)
-
 
     clearInterval(predictionInterval.value)
 
@@ -399,32 +431,124 @@ const predictCase = async (caseData) => {
     predictionDisease.value = response.data.disease
     predictionSuggestion.value = response.data.suggestion
 
-    await loadCases()
+    try {
+      await loadCases()
+    } catch (e) {
+      console.warn('Backend loadCases failed, but prediction succeeded:', e)
+    }
   } catch (error) {
-    console.error('预测失败:', error)
-    ElMessage.error(error.message || '预测失败')
+    console.error('Prediction failed:', error)
+    ElMessage.error(error.message || 'Prediction failed')
     closePredictionDialog()
   } finally {
     loading.value = false
   }
 }
 
+const predictDirectly = async () => {
+  if (previewData.value.length === 0) {
+    ElMessage.warning('Please upload data first')
+    return
+  }
+  
+  try {
+    const dataToPredict = previewData.value[0]
+    await predictCase(dataToPredict)
+  } catch (error) {
+    console.error('Direct prediction failed:', error)
+    ElMessage.error('Direct prediction failed')
+  }
+}
+
+const compareAlgorithms = async () => {
+  if (previewData.value.length === 0) {
+    ElMessage.warning('Please upload data first')
+    return
+  }
+  
+  try {
+    loading.value = true
+    const response = await predictionService.predictAllWithFlask(previewData.value[0])
+    comparisonResults.value = response.data.results
+    comparisonDialogVisible.value = true
+  } catch (error) {
+    console.error('Algorithm comparison failed:', error)
+    ElMessage.error('Failed to get comparison results')
+  } finally {
+    loading.value = false
+  }
+}
+
+const comparisonTableData = computed(() => {
+  return Object.entries(comparisonResults.value).map(([algo, data]) => ({
+    algo: algo.toUpperCase().replace('_', ' '),
+    prob: data.probability || 0,
+    label: data.label || 'Unknown'
+  }))
+})
+
+const initComparisonChart = () => {
+  if (!comparisonChartRef.value) return
+  
+  if (comparisonChart) {
+    comparisonChart.dispose()
+  }
+  
+  comparisonChart = echarts.init(comparisonChartRef.value)
+  
+  const data = comparisonTableData.value
+  const option = {
+    title: { text: 'Comparison of Prediction Probabilities', left: 'center' },
+    tooltip: { trigger: 'axis' },
+    xAxis: {
+      type: 'category',
+      data: data.map(i => i.algo)
+    },
+    yAxis: {
+      type: 'value',
+      name: 'Probability (%)',
+      max: 100
+    },
+    series: [{
+      data: data.map(i => (i.prob * 100).toFixed(2)),
+      type: 'bar',
+      showBackground: true,
+      backgroundStyle: { color: 'rgba(180, 180, 180, 0.2)' },
+      itemStyle: {
+        color: (params) => {
+          const val = params.data
+          if (val < 30) return '#67C23A'
+          if (val < 70) return '#E6A23C'
+          return '#F56C6C'
+        }
+      },
+      label: {
+        show: true,
+        position: 'top',
+        formatter: '{c}%'
+      }
+    }]
+  }
+  
+  comparisonChart.setOption(option)
+}
+
 const deleteCase = async (caseData) => {
   try {
-    await ElMessageBox.confirm('确定要删除这个病例吗？', '提示', {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
+    await ElMessageBox.confirm('Are you sure you want to delete this medical record?', 'Notice', {
+      confirmButtonText: 'Confirm',
+      cancelButtonText: 'Cancel',
       type: 'warning'
     })
 
     loading.value = true
     await predictionService.deleteCase(caseData.id)
     await loadCases()
-    ElMessage.success('删除成功')
+    ElMessage.success('Deleted successfully')
   } catch (error) {
     if (error !== 'cancel') {
-      console.error('删除病例失败:', error)
-      ElMessage.error(error.message || '删除病例失败')
+      console.error('Delete failed:', error)
+      ElMessage.error(error.message || 'Delete failed')
     }
   } finally {
     loading.value = false
@@ -616,5 +740,16 @@ onBeforeUnmount(() => {
   line-height: 1.6;
   text-align: left;
   font-size: 16px;
+}
+
+.comparison-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 10px;
+}
+
+.comparison-table {
+  margin-top: 10px;
 }
 </style>
