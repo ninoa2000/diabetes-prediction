@@ -1,9 +1,9 @@
 /* Global Design System - Trustworthy Clinical Theme */
 :root {
-  /* Primary Palette */
-  --color-primary: #4f46e5;      /* Indigo 600 */
-  --color-primary-dark: #3730a3; /* Indigo 800 */
-  --color-primary-light: #e0e7ff; /* Indigo 100 */
+  /* Primary Palette (Clinical Blue) */
+  --color-primary: #3b82f6;      /* Blue 500 */
+  --color-primary-dark: #1d4ed8; /* Blue 700 */
+  --color-primary-light: #eff6ff; /* Blue 50 */
   
   /* Semantic Status Colors */
   --color-success: #10b981;      /* Emerald 500 */
@@ -15,8 +15,8 @@
   --color-danger: #ef4444;       /* Rose 500 */
   --color-danger-light: #fef2f2;
   
-  --color-info: #6366f1;         /* Indigo/Violet blend */
-  --color-info-light: #eef2ff;
+  --color-info: #3b82f6;         /* Consistent Blue */
+  --color-info-light: #eff6ff;
 
   /* Neutral Palette */
   --color-bg: #f8fafc;           /* Slate 50 */

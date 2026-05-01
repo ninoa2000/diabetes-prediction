@@ -1,38 +1,8 @@
 <template>
   <div class="prediction-form fade-in">
     <!-- Main Prediction Card -->
-    <el-card class="box-card premium-card" shadow="never">
-      <template #header>
-        <div class="card-header">
-          <div class="header-title-group">
-            <div class="icon-box">
-              <el-icon><Monitor /></el-icon>
-            </div>
-            <div class="title-text">
-              <h2>Health Prediction</h2>
-              <p>Advanced Clinical Analysis & Risk Assessment</p>
-            </div>
-          </div>
-
-          <div class="model-select-container">
-            <span class="model-label">Analysis Model</span>
-            <el-select
-              v-model="modelType"
-              size="default"
-              @change="saveModelType"
-              class="premium-select"
-              style="width: 180px"
-            >
-              <el-option label="SVM" value="svm" />
-              <el-option label="XGBoost" value="xgboost" />
-              <el-option label="Random Forest" value="random_forest" />
-              <el-option label="MLP" value="mlp" />
-              <el-option label="Decision Tree" value="decision_tree" />
-            </el-select>
-          </div>
-        </div>
-      </template>
-
+    <!-- Main Prediction Card -->
+    <el-card class="box-card premium-card no-header" shadow="never">
       <!-- Input Selection -->
       <div v-if="!previewData.length" class="input-selection-container">
         <el-row :gutter="32">
@@ -75,7 +45,7 @@
           <div class="stage-info">
             <el-icon v-if="isScanResult"><MagicStick /></el-icon>
             <el-icon v-else><Document /></el-icon>
-            <h3>Verify Extracted Patient Metrics</h3>
+            <h3>Verify Metrics & Select Intelligence</h3>
             <span class="source-pill" :class="{ 'ai-source': isScanResult }">
               {{ isScanResult ? 'AI Vision Scan' : (uploadedFileName || 'Data Import') }}
             </span>
@@ -90,15 +60,50 @@
           </div>
         </div>
 
+        <!-- Model Selection Section (Now inside preview) -->
+        <div class="model-selection-preview fade-in">
+          <div class="selection-box-compact">
+            <div class="selection-label-group">
+              <span class="selection-title">Diagnostic Intelligence</span>
+              <span class="selection-subtitle">Choose the AI algorithm to process these metrics</span>
+            </div>
+            <el-select
+              v-model="modelType"
+              size="large"
+              placeholder="Choose an AI Algorithm..."
+              @change="saveModelType"
+              class="premium-select-standalone"
+              style="width: 320px"
+            >
+              <el-option label="SVM (Support Vector Machine)" value="svm" />
+              <el-option label="XGBoost (Extreme Gradient Boosting)" value="xgboost" />
+              <el-option label="Random Forest Classifier" value="random_forest" />
+              <el-option label="MLP (Neural Network)" value="mlp" />
+              <el-option label="Decision Tree" value="decision_tree" />
+            </el-select>
+          </div>
+        </div>
+
         <div class="stage-footer">
-          <el-button type="success" size="large" @click="predictDirectly" class="btn-wide predict-btn">Predict</el-button>
+          <el-button 
+            type="success" 
+            size="large" 
+            @click="predictDirectly" 
+            class="btn-wide predict-btn"
+            :disabled="!modelType"
+          >
+            {{ modelType ? 'Run AI Diagnosis' : 'Select Algorithm to Predict' }}
+          </el-button>
         </div>
       </div>
 
       <!-- History Records -->
       <div v-if="!previewData.length && cases.length > 0" class="history-section">
         <div class="history-header">
-          <h3>Recent Records</h3>
+          <div class="history-title-group">
+            <h3>Recent Records</h3>
+            <p>Historical clinical assessments and diagnostic history</p>
+          </div>
           <el-button link type="primary" @click="loadCases" :loading="loading">
             <el-icon><Refresh /></el-icon> Refresh
           </el-button>
@@ -201,7 +206,7 @@ import { UploadFilled, Refresh, Monitor, DataAnalysis, Camera, VideoCamera, Pict
 import * as XLSX from 'xlsx'
 import { predictionService } from '@/api/prediction'
 
-const modelType = ref(localStorage.getItem('modelType') || 'svm')
+const modelType = ref('')
 const previewData = ref([])
 const cases = ref([])
 const loading = ref(false)
@@ -249,6 +254,7 @@ const handleFileChange = (e) => {
     const ws = wb.Sheets[wb.SheetNames[0]]
     const jsonData = XLSX.utils.sheet_to_json(ws, { defval: null })
     previewData.value = [jsonData[0]]
+    modelType.value = '' // Force user to choose
   }
   reader.readAsArrayBuffer(file)
 }
@@ -263,6 +269,7 @@ const handleImageFileChange = (e) => {
     isScanResult.value = true
     uploadedFileName.value = file.name
     previewData.value = [{ 'Age': 48, 'BMI': 31.5, 'Blood Glucose': 125, 'Systolic BP': 142, 'Diastolic BP': 88, 'HbA1c': 6.2, 'Family History': 1 }]
+    modelType.value = '' // Force user to choose
     loading.value = false
     ElMessage.success('Data extracted successfully')
   }, 2000)
@@ -335,7 +342,14 @@ const predictCase = async (caseData) => {
     if (caseData.id) { 
       await predictionService.updateCaseResults(caseData.id, { algorithm: model, disease: res.data.disease, probability: res.data.probability, suggestion: res.data.suggestion }) 
     } else {
-      await predictionService.submitHealthData({ healthData: caseData, fileName: isScanResult.value ? 'AI Scan Result' : uploadedFileName.value, algorithm: model, disease: res.data.disease, probability: res.data.probability, suggestion: res.data.suggestion })
+      await predictionService.saveHealthData({ 
+        ...caseData, 
+        fileName: isScanResult.value ? 'AI Scan Result' : uploadedFileName.value, 
+        algorithm: model, 
+        disease: res.data.disease, 
+        probability: res.data.probability, 
+        suggestion: res.data.suggestion 
+      })
     }
     ElMessage.success('Prediction successful! Check history below.')
     clearPreview()
@@ -377,13 +391,20 @@ onBeforeUnmount(() => { if (stream) stream.getTracks().forEach(t => t.stop()) })
 .model-select-container { display: flex; flex-direction: column; gap: 4px; }
 .model-label { font-size: 11px; font-weight: 700; color: var(--color-text-light); text-transform: uppercase; }
 
-.input-selection-container { padding: 40px 0; }
-.method-card { position: relative; background: #fff; border: 1px solid var(--color-border); border-radius: 24px; padding: 48px 32px; text-align: center; cursor: pointer; transition: all 0.3s ease; height: 100%; min-height: 340px; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+.input-selection-container { padding: 10px 0 30px; }
+.method-card { position: relative; background: #fff; border: 1px solid var(--color-border); border-radius: 24px; padding: 40px 32px; text-align: center; cursor: pointer; transition: all 0.3s ease; height: 100%; min-height: 300px; display: flex; flex-direction: column; justify-content: center; align-items: center; }
 .method-card:hover { transform: translateY(-5px); border-color: var(--color-primary); }
 .method-icon { font-size: 56px; color: var(--color-primary); margin-bottom: 24px; }
 .method-card h3 { font-size: 20px; font-weight: 800; margin: 0 0 12px; }
 .method-card p { font-size: 14px; color: #64748b; line-height: 1.5; margin-bottom: 24px; max-width: 280px; }
-.ai-tag { position: absolute; top: 20px; right: 20px; background: #10b981; color: white; padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; }
+.ai-tag { position: absolute; top: 20px; right: 20px; background: #3b82f6; color: white; padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; box-shadow: 0 2px 10px rgba(59, 130, 246, 0.3); }
+
+.model-selection-preview { margin-top: 24px; padding: 20px; background: #fff; border: 1px solid #e2e8f0; border-radius: 16px; }
+.selection-box-compact { display: flex; align-items: center; gap: 24px; justify-content: space-between; }
+.selection-label-group { display: flex; flex-direction: column; gap: 2px; }
+.selection-title { font-size: 15px; font-weight: 800; color: var(--color-text-main); }
+.selection-subtitle { font-size: 12px; color: var(--color-text-muted); }
+
 .scan-options-row { display: flex; gap: 12px; justify-content: center; width: 100%; }
 .scan-sub-btn { border-radius: 12px; padding: 12px 20px; font-weight: 700; }
 
@@ -391,21 +412,22 @@ onBeforeUnmount(() => { if (stream) stream.getTracks().forEach(t => t.stop()) })
 .stage-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
 .stage-info { display: flex; align-items: center; gap: 12px; }
 .stage-info h3 { margin: 0; font-size: 18px; font-weight: 800; }
-.source-pill { background: #e2e8f0; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; color: #475569; }
-.ai-source { background: #d1fae5; color: #059669; }
+.source-pill { background: white; padding: 4px 14px; border-radius: 20px; font-size: 12px; font-weight: 700; color: #3b82f6; border: 2px solid #3b82f6; }
+.ai-source { border-color: #3b82f6; color: #3b82f6; background: white; }
 
 .metrics-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 16px; margin: 24px 0; }
 .metric-input-item label { display: block; font-size: 10px; font-weight: 800; color: #94a3b8; text-transform: uppercase; margin-bottom: 8px; }
 
-.history-section { margin-top: 60px; }
-.history-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-.history-header h3 { font-size: 18px; font-weight: 800; margin: 0; }
+.history-section { margin-top: 100px; border-top: 1px solid #f1f5f9; padding-top: 40px; }
+.history-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+.history-title-group h3 { font-size: 18px; font-weight: 800; margin: 0; }
+.history-title-group p { margin: 4px 0 0; font-size: 13px; color: #94a3b8; }
 
 .result-pill-container { display: flex; align-items: center; gap: 6px; }
 .status-dot { width: 6px; height: 6px; border-radius: 50%; }
 .status-text-small { font-size: 11px; font-weight: 700; text-transform: uppercase; }
 .status-percent-small { font-size: 10px; color: #94a3b8; }
-.algo-pill-solid { background-color: var(--color-algorithm) !important; color: white !important; border: none; font-weight: 800; font-size: 11px; }
+.algo-pill-solid { background-color: white !important; color: #3b82f6 !important; border: 2px solid #3b82f6 !important; font-weight: 800; font-size: 11px; border-radius: 20px; padding: 2px 12px; }
 
 .scanner-viewport { background: #111; border-radius: 16px; height: 400px; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; }
 .video-container { width: 100%; height: 100%; position: relative; }
@@ -429,6 +451,9 @@ onBeforeUnmount(() => { if (stream) stream.getTracks().forEach(t => t.stop()) })
 .result-label { font-size: 12px; font-weight: 700; color: #64748b; }
 .result-value { font-size: 20px; font-weight: 800; }
 .result-suggestion { background: #f8fafc; padding: 12px; border-radius: 8px; font-size: 13px; line-height: 1.5; border-left: 4px solid #3b82f6; }
+
+.stage-footer { margin-top: 40px; display: flex; justify-content: flex-start; }
+.predict-btn { padding: 16px 40px; height: auto; font-size: 16px; font-weight: 800; border-radius: 12px; }
 
 :deep(.premium-table) { border-radius: 12px; overflow: hidden; border: 1px solid #f1f5f9; }
 </style>
