@@ -4,7 +4,7 @@
       <el-card class="result-card">
         <template #header>
           <div class="card-header">
-            <h2>预测结果</h2>
+            <h2>Prediction Results</h2>
             <div>
               <el-button 
                 type="primary" 
@@ -12,7 +12,7 @@
                 size="small" 
                 @click="goBack"
               >
-                返回
+                Back
               </el-button>
               <el-button 
                 type="success" 
@@ -20,7 +20,7 @@
                 size="small" 
                 @click="printResult"
               >
-                打印结果
+                Print Results
               </el-button>
             </div>
           </div>
@@ -30,19 +30,19 @@
           <div class="risk-gauge">
             <div ref="gaugeChartRef" class="chart-container"></div>
             <div class="risk-level">
-              <span>风险等级:</span>
+              <span>Risk Level:</span>
               <el-tag :type="riskLevelType">{{ predictionData.result.riskLevel }}</el-tag>
             </div>
           </div>
           
           <div class="risk-details">
-            <h3>风险分析</h3>
+            <h3>Risk Analysis</h3>
             <p>
-              根据您提供的健康数据，您患糖尿病的风险指数为 <strong>{{ predictionData.result.riskPercentage }}%</strong>，
-              属于<strong>{{ predictionData.result.riskLevel }}</strong>风险水平。
+              Based on the health data you provided, your diabetes risk index is <strong>{{ predictionData.result.riskPercentage }}%</strong>,
+              belonging to the <strong>{{ predictionData.result.riskLevel }}</strong> risk level.
             </p>
             
-            <h3>健康建议</h3>
+            <h3>Health Recommendations</h3>
             <el-alert
               v-for="(recommendation, index) in predictionData.result.recommendations"
               :key="index"
@@ -54,7 +54,7 @@
             </el-alert>
             
             <div class="contributing-factors" v-if="contributingFactors.length > 0">
-              <h3>主要风险因素</h3>
+              <h3>Primary Risk Factors</h3>
               <el-tag 
                 v-for="factor in contributingFactors" 
                 :key="factor.name"
@@ -69,20 +69,20 @@
         </div>
         
         <div class="health-data-summary">
-          <h3>健康数据摘要</h3>
+          <h3>Health Data Summary</h3>
           <el-descriptions border :column="3">
-            <el-descriptions-item label="年龄">{{ predictionData.healthData.age }} 岁</el-descriptions-item>
-            <el-descriptions-item label="性别">{{ predictionData.healthData.gender === 'male' ? '男' : '女' }}</el-descriptions-item>
+            <el-descriptions-item label="Age">{{ predictionData.healthData.age }} years</el-descriptions-item>
+            <el-descriptions-item label="Gender">{{ predictionData.healthData.gender === 'male' ? 'Male' : 'Female' }}</el-descriptions-item>
             <el-descriptions-item label="BMI">{{ predictionData.healthData.bmi }}</el-descriptions-item>
-            <el-descriptions-item label="血压">
+            <el-descriptions-item label="Blood Pressure">
               {{ predictionData.healthData.bloodPressure.systolic }}/{{ predictionData.healthData.bloodPressure.diastolic }} mmHg
             </el-descriptions-item>
-            <el-descriptions-item label="血糖">{{ predictionData.healthData.bloodSugar }} mg/dL</el-descriptions-item>
-            <el-descriptions-item label="胆固醇">{{ predictionData.healthData.cholesterol }} mg/dL</el-descriptions-item>
-            <el-descriptions-item label="家族病史">{{ predictionData.healthData.familyHistory ? '有' : '无' }}</el-descriptions-item>
-            <el-descriptions-item label="吸烟">{{ predictionData.healthData.smoking ? '是' : '否' }}</el-descriptions-item>
-            <el-descriptions-item label="饮酒">{{ predictionData.healthData.alcohol ? '是' : '否' }}</el-descriptions-item>
-            <el-descriptions-item label="规律运动">{{ predictionData.healthData.exercise ? '是' : '否' }}</el-descriptions-item>
+            <el-descriptions-item label="Blood Sugar">{{ predictionData.healthData.bloodSugar }} mg/dL</el-descriptions-item>
+            <el-descriptions-item label="Cholesterol">{{ predictionData.healthData.cholesterol }} mg/dL</el-descriptions-item>
+            <el-descriptions-item label="Family History">{{ predictionData.healthData.familyHistory ? 'Yes' : 'No' }}</el-descriptions-item>
+            <el-descriptions-item label="Smoking">{{ predictionData.healthData.smoking ? 'Yes' : 'No' }}</el-descriptions-item>
+            <el-descriptions-item label="Alcohol">{{ predictionData.healthData.alcohol ? 'Yes' : 'No' }}</el-descriptions-item>
+            <el-descriptions-item label="Exercise">{{ predictionData.healthData.exercise ? 'Yes' : 'No' }}</el-descriptions-item>
           </el-descriptions>
         </div>
       </el-card>
@@ -90,10 +90,10 @@
     
     <el-empty 
       v-else 
-      description="没有预测数据" 
+      description="No prediction data" 
       :image-size="200"
     >
-      <el-button type="primary" @click="goToPrediction">开始预测</el-button>
+      <el-button type="primary" @click="goToPrediction">Start Prediction</el-button>
     </el-empty>
   </div>
 </template>
@@ -133,39 +133,39 @@ const contributingFactors = computed(() => {
   
   // Check individual factors and add to list if they contribute to risk
   if (data.age > 50) {
-    factors.push({ label: '年龄偏高', type: 'warning', name: 'age' });
+    factors.push({ label: 'Older Age', type: 'warning', name: 'age' });
   }
   
   if (data.bloodPressure.systolic > 130 || data.bloodPressure.diastolic > 80) {
-    factors.push({ label: '血压偏高', type: 'danger', name: 'blood_pressure' });
+    factors.push({ label: 'High Blood Pressure', type: 'danger', name: 'blood_pressure' });
   }
   
   if (data.bloodSugar > 100) {
-    factors.push({ label: '血糖偏高', type: 'danger', name: 'blood_sugar' });
+    factors.push({ label: 'High Blood Sugar', type: 'danger', name: 'blood_sugar' });
   }
   
   if (data.cholesterol > 200) {
-    factors.push({ label: '胆固醇偏高', type: 'danger', name: 'cholesterol' });
+    factors.push({ label: 'High Cholesterol', type: 'danger', name: 'cholesterol' });
   }
   
   if (data.bmi > 25) {
-    factors.push({ label: 'BMI偏高', type: 'warning', name: 'bmi' });
+    factors.push({ label: 'High BMI', type: 'warning', name: 'bmi' });
   }
   
   if (data.familyHistory) {
-    factors.push({ label: '家族病史', type: 'warning', name: 'family_history' });
+    factors.push({ label: 'Family History', type: 'warning', name: 'family_history' });
   }
   
   if (data.smoking) {
-    factors.push({ label: '吸烟', type: 'danger', name: 'smoking' });
+    factors.push({ label: 'Smoking', type: 'danger', name: 'smoking' });
   }
   
   if (data.alcohol) {
-    factors.push({ label: '饮酒', type: 'warning', name: 'alcohol' });
+    factors.push({ label: 'Alcohol', type: 'warning', name: 'alcohol' });
   }
   
   if (!data.exercise) {
-    factors.push({ label: '缺乏运动', type: 'warning', name: 'exercise' });
+    factors.push({ label: 'Lack of Exercise', type: 'warning', name: 'exercise' });
   }
   
   return factors;
@@ -215,7 +215,7 @@ const initGaugeChart = () => {
           fontSize: 16,
           color: '#303133',
           offsetCenter: [0, '60%'],
-          formatter: '糖尿病风险指数'
+          formatter: 'Diabetes Risk Index'
         },
         data: [{ value: riskPercentage }]
       }

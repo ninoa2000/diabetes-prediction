@@ -1,7 +1,7 @@
 <template>
   <el-container>
     <el-main class="content-wrapper">
-      <h1 class="main-title">慢性疾病知识</h1>
+      <h1 class="main-title">Chronic Disease Information</h1>
 
       <el-card
         v-for="item in diseases"
@@ -16,12 +16,12 @@
               <span class="collapse-title">{{ item.name }}</span>
             </template>
 
-            <!-- 概述 -->
-            <el-divider content-position="left">概述</el-divider>
+            <!-- Overview -->
+            <el-divider content-position="left">Overview</el-divider>
             <p class="section-text">{{ item.description }}</p>
 
-            <!-- 症状 -->
-            <el-divider content-position="left">症状</el-divider>
+            <!-- Symptoms -->
+            <el-divider content-position="left">Symptoms</el-divider>
             <div class="tag-group">
               <el-tag
                 v-for="(sym, idx) in formatList(item.symptoms)"
@@ -33,16 +33,16 @@
               </el-tag>
             </div>
 
-            <!-- 病因 -->
-            <el-divider content-position="left">病因</el-divider>
+            <!-- Causes -->
+            <el-divider content-position="left">Causes</el-divider>
             <p class="section-text">{{ item.causes }}</p>
 
-            <!-- 预防措施 -->
-            <el-divider content-position="left">预防措施</el-divider>
+            <!-- Prevention Measures -->
+            <el-divider content-position="left">Prevention Measures</el-divider>
             <p class="section-text">{{ item.prevention }}</p>
 
-            <!-- 治疗方式 -->
-            <el-divider content-position="left">治疗方式</el-divider>
+            <!-- Treatment Methods -->
+            <el-divider content-position="left">Treatment Methods</el-divider>
             <p class="section-text">{{ item.treatment }}</p>
           </el-collapse-item>
         </el-collapse>
@@ -75,7 +75,7 @@ async function loadDiseases() {
     diseases.value = Array.isArray(res.data) ? res.data : [];
   } catch (e) {
     console.error(e);
-    ElMessage.error('加载疾病数据失败');
+    ElMessage.error('Failed to load disease data');
   }
 }
 

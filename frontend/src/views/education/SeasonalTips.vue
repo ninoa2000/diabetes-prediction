@@ -1,12 +1,12 @@
 <template>
   <el-container>
     <el-main>
-      <h1 class="text-h4 mb-6">健康爱好</h1>
+      <h1 class="text-h4 mb-6">Health Tips</h1>
 
       <el-row gutter="20">
         <el-col :xs="24" :md="16">
           <p class="text-body-1 mb-4">
-            健康爱好是促进身心健康的重要经济和行为支持。通过培养一些有益健康的爱好模式，不仅能有效维持身体活力，还能减轻压力，改善情绪，增强耐力。该段内容根据不同类型的健康行为提供实用的指导
+            Healthy hobbies are important supports for promoting physical and mental health. By cultivating beneficial healthy patterns, you can effectively maintain vitality, reduce stress, improve mood, and enhance endurance. This section provides practical guidance based on different types of healthy behaviors.
           </p>
         </el-col>
         <el-col :xs="24" :md="8">
@@ -29,9 +29,9 @@
           stripe
           style="width: 100%"
         >
-          <el-table-column prop="title" label="标题" />
-          <el-table-column prop="category" label="分类" width="120" />
-          <el-table-column prop="content" label="提示内容" />
+          <el-table-column prop="title" label="Title" />
+          <el-table-column prop="category" label="Category" width="120" />
+          <el-table-column prop="content" label="Tip Content" />
           
         </el-table>
       </el-card>
@@ -64,7 +64,7 @@ async function loadHabits() {
     const res = await fetchHabits();
     habitsRaw.value = Array.isArray(res) ? res : [];
   } catch (e) {
-    ElMessage.error('加载健康提示失败');
+    ElMessage.error('Failed to load health tips');
   } finally {
     loading.value = false;
   }

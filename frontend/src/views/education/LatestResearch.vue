@@ -1,16 +1,16 @@
 <template>
   <el-container>
     <el-main>
-      <h1 class="main-title mb-6">慢性疾病研究咨询</h1>
+      <h1 class="main-title mb-6">Chronic Disease Research Information</h1>
 
       <p class="description mb-8">
-        本页面汇集了关于慢性疾病预防和管理的最新研究成果和医学进展。
-        我们定期更新内容，为您提供来自权威医学期刊和机构的最新研究发现。
+        This page brings together the latest research findings and medical progress on chronic disease prevention and management. 
+        We update content regularly to provide you with the latest discoveries from authoritative medical journals and institutions.
       </p>
 
       <el-card class="mb-6">
         <template #header>
-          <div class="card-header">研究进展</div>
+          <div class="card-header">Research Progress</div>
         </template>
         <el-timeline>
           <el-timeline-item
@@ -28,7 +28,7 @@
               </template>
               <p>{{ item.content }}</p>
               <div class="action-row">
-                <el-tag size="small" type="info">{{ item.type || '研究' }}</el-tag>
+                <el-tag size="small" type="info">{{ item.type || 'Research' }}</el-tag>
               </div>
             </el-card>
           </el-timeline-item>
@@ -61,7 +61,7 @@ async function loadResearch() {
   try {
     researchList.value = await listResearch();
   } catch (e) {
-    console.error('加载研究数据失败', e);
+    console.error('Failed to load research data', e);
   }
 }
 

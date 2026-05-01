@@ -3,7 +3,7 @@
     <el-card class="message-card">
       <template #header>
         <div class="card-header">
-          <h2>我的留言</h2>
+          <h2>My Messages</h2>
         </div>
       </template>
       
@@ -13,30 +13,30 @@
       
       <template v-else>
         <div v-if="!boundDoctor" class="no-doctor">
-          <el-empty description="您尚未绑定医生" :image-size="200">
+          <el-empty description="You have not bound a doctor yet" :image-size="200">
             <template #description>
-              <p>绑定医生后才能发送留言</p>
+              <p>You must bind a doctor to send messages</p>
             </template>
-            <el-button type="primary" @click="goToDoctorBinding">绑定医生</el-button>
+            <el-button type="primary" @click="goToDoctorBinding">Bind Doctor</el-button>
           </el-empty>
         </div>
         
         <template v-else>
           <div class="doctor-info">
-            <span class="info-label">当前绑定医生：</span>
+            <span class="info-label">Currently Bound Doctor:</span>
             <el-tag size="large">{{ boundDoctor.name }}</el-tag>
             <span class="info-detail">{{ boundDoctor.department }} - {{ boundDoctor.specialty }}</span>
           </div>
           
           <div class="message-form">
-            <h3>发送新留言</h3>
+            <h3>Send New Message</h3>
             <el-form :model="messageForm" ref="messageFormRef" :rules="formRules">
               <el-form-item prop="content">
                 <el-input
                   v-model="messageForm.content"
                   type="textarea"
                   :rows="4"
-                  placeholder="请输入留言内容，如健康问题咨询、预测结果解释等..."
+                  placeholder="Please enter your message, such as health consultation or prediction explanation..."
                 />
               </el-form-item>
               <el-form-item>
@@ -45,17 +45,17 @@
                   @click="submitMessage"
                   :loading="submitting"
                 >
-                  发送留言
+                  Send Message
                 </el-button>
               </el-form-item>
             </el-form>
           </div>
           
           <div class="message-history">
-            <h3>历史留言</h3>
+            <h3>Message History</h3>
             
             <div v-if="messages.length === 0" class="empty-messages">
-              <el-empty description="暂无历史留言" :image-size="100" />
+              <el-empty description="No Message History" :image-size="100" />
             </div>
             
             <div v-else>
@@ -69,11 +69,11 @@
                   <el-card class="message-item">
                     <div class="message-content">{{ message.content }}</div>
                     <div v-if="message.replyContent" class="reply-content">
-                      <div class="reply-label">医生回复：</div>
+                      <div class="reply-label">Doctor Reply:</div>
                       <div class="reply-text">{{ message.replyContent }}</div>
                     </div>
                     <div v-if="!message.read" class="message-status">
-                      <el-tag size="small" type="info">未回复</el-tag>
+                      <el-tag size="small" type="info">Unreplied</el-tag>
                     </div>
                   </el-card>
                 </el-timeline-item>
@@ -108,8 +108,8 @@ const messageForm = reactive({
 // Form validation rules
 const formRules = {
   content: [
-    { required: true, message: '请输入留言内容', trigger: 'blur' },
-    { min: 5, max: 500, message: '留言长度在 5 到 500 个字符', trigger: 'blur' }
+    { required: true, message: 'Please enter message content', trigger: 'blur' },
+    { min: 5, max: 500, message: 'Message length must be between 5 and 500 characters', trigger: 'blur' }
   ]
 };
 
@@ -136,14 +136,14 @@ const submitMessage = () => {
     if (!valid) return;
     
     if (!boundDoctor.value) {
-      ElMessage.error('请先绑定医生');
+      ElMessage.error('Please bind a doctor first');
       return;
     }
     
     try {
       submitting.value = true;
       await messageService.sendMessage(boundDoctor.value.id, messageForm.content);
-      ElMessage.success('留言发送成功');
+      ElMessage.success('Message sent successfully');
       
       // Clear form
       messageForm.content = '';
@@ -151,7 +151,7 @@ const submitMessage = () => {
       // Reload messages
       await loadMessages();
     } catch (error) {
-      ElMessage.error(error.message || '留言发送失败');
+      ElMessage.error(error.message || 'Failed to send message');
       console.error('Failed to send message:', error);
     } finally {
       submitting.value = false;
@@ -173,7 +173,7 @@ const loadData = async () => {
       await loadMessages();
     }
   } catch (error) {
-    ElMessage.error('加载数据失败');
+    ElMessage.error('Failed to load data');
     console.error('Failed to load data:', error);
   } finally {
     loading.value = false;

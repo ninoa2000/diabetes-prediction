@@ -2,7 +2,7 @@ import { defineStore } from 'pinia';
 import axios from 'axios';
 import { API_BASE_URL } from '@/config';
 
-// 创建API客户端实例
+// Create API client instance
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
   headers: {
@@ -10,11 +10,11 @@ const apiClient = axios.create({
   }
 });
 
-// 添加请求拦截器，在每个请求中加入token
+// Add request interceptor to include token in every request
 apiClient.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
-    console.log('请求URL:', config.url, '完整URL:', config.baseURL + config.url);
+    console.log('Request URL:', config.url, 'Full URL:', config.baseURL + config.url);
     if (token) {
       config.headers['Authorization'] = `Bearer ${token}`;
     }
@@ -25,13 +25,13 @@ apiClient.interceptors.request.use(
   }
 );
 
-// 安全的 JSON 解析函数
+// Safe JSON parse function
 const safeJSONParse = (jsonString) => {
   if (!jsonString) return null;
   try {
     return JSON.parse(jsonString);
   } catch (e) {
-    console.error('JSON解析错误:', e);
+    console.error('JSON parse error:', e);
     return null;
   }
 };
@@ -60,31 +60,31 @@ export const useUserStore = defineStore('user', {
       this.error = null;
       
       try {
-        console.log('尝试登录，用户名:', credentials.username);
+        console.log('Attempting login, username:', credentials.username);
         const response = await apiClient.post('/auth/login', {
           username: credentials.username,
           password: credentials.password
         });
         
-        console.log('登录成功，响应:', response);
+        console.log('Login successful, response:', response);
         
         if (response.data) {
-          console.log('后端返回的数据:', response.data);
+          console.log('Backend returned data:', response.data);
           
-          // 存储认证数据
+          // Store authentication data
           this.setUser(response.data);
           
-          // 返回成功信息
-          return { code: 200, message: '登录成功' };
+          // Return success message
+          return { code: 200, message: 'Login successful' };
         } else {
-          throw new Error('登录响应数据格式错误');
+          throw new Error('Invalid login response data format');
         }
       } catch (error) {
-        console.error('登录错误:', error);
-        console.error('错误详情:', error.response);
+        console.error('Login error:', error);
+        console.error('Error details:', error.response);
         
-        // 返回错误信息
-        const errorMessage = error.response?.data?.message || '登录失败，请检查用户名和密码';
+        // Return error message
+        const errorMessage = error.response?.data?.message || 'Login failed, please check username and password';
         this.error = errorMessage;
         throw new Error(errorMessage);
       } finally {

@@ -17,7 +17,7 @@
     <!-- 功能卡片 -->
     <el-row :gutter="16" class="feature-cards">
       <el-col :xs="24" :sm="12" :md="8">
-        <el-card class="feature-card" shadow="hover">
+        <el-card class="feature-card" shadow="hover" @click="goTo('/prediction')">
           <div class="feature-content">
             <el-icon class="feature-icon"><Timer /></el-icon>
             <h3>Fast Prediction</h3>
@@ -27,7 +27,7 @@
       </el-col>
 
       <el-col :xs="24" :sm="12" :md="8">
-        <el-card class="feature-card" shadow="hover">
+        <el-card class="feature-card" shadow="hover" @click="goTo('/education/health-guide')">
           <div class="feature-content">
             <el-icon class="feature-icon"><Document /></el-icon>
             <h3>Professional Suggestions</h3>
@@ -37,7 +37,7 @@
       </el-col>
 
       <el-col :xs="24" :sm="12" :md="8">
-        <el-card class="feature-card" shadow="hover">
+        <el-card class="feature-card" shadow="hover" @click="goTo('/profile')">
           <div class="feature-content">
             <el-icon class="feature-icon"><Lock /></el-icon>
             <h3>Data Security</h3>
@@ -70,6 +70,13 @@
 
 <script setup>
 import { Timer, Document, Lock, Picture } from '@element-plus/icons-vue'
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
+
+const goTo = (path) => {
+  router.push(path)
+}
 </script>
 
 <style scoped>
@@ -122,6 +129,7 @@ import { Timer, Document, Lock, Picture } from '@element-plus/icons-vue'
   transition: all 0.3s;
   border-radius: 8px;
   overflow: hidden;
+  cursor: pointer;
 }
 
 .feature-card:hover {

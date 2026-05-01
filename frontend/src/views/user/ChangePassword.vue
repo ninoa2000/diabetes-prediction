@@ -2,7 +2,7 @@
   <div class="change-password-page">
     <el-card class="box-card">
       <template #header>
-        <span>修改密码</span>
+        <span>Change Password</span>
       </template>
 
       <el-form
@@ -12,21 +12,21 @@
         label-width="100px"
         class="change-password-form"
       >
-        <el-form-item label="原密码" prop="oldPassword">
+        <el-form-item label="Old Password" prop="oldPassword">
           <el-input
             v-model="form.oldPassword"
             type="password"
             autocomplete="off"
           />
         </el-form-item>
-        <el-form-item label="新密码" prop="newPassword">
+        <el-form-item label="New Password" prop="newPassword">
           <el-input
             v-model="form.newPassword"
             type="password"
             autocomplete="off"
           />
         </el-form-item>
-        <el-form-item label="确认密码" prop="confirmPassword">
+        <el-form-item label="Confirm Password" prop="confirmPassword">
           <el-input
             v-model="form.confirmPassword"
             type="password"
@@ -38,8 +38,8 @@
             type="primary"
             :loading="loading"
             @click="onSubmit"
-          >提交</el-button>
-          <el-button @click="onReset">重置</el-button>
+            >Submit</el-button>
+          <el-button @click="onReset">Reset</el-button>
         </el-form-item>
       </el-form>
     </el-card>
@@ -60,18 +60,18 @@ const loading = ref(false);
 const form = reactive({ oldPassword: '', newPassword: '', confirmPassword: '' });
 const rules = {
   oldPassword: [
-    { required: true, message: '请输入原密码', trigger: 'blur' }
+    { required: true, message: 'Please enter old password', trigger: 'blur' }
   ],
   newPassword: [
-    { required: true, message: '请输入新密码', trigger: 'blur' },
-    { min: 8, message: '密码至少 8 位', trigger: 'blur' }
+    { required: true, message: 'Please enter new password', trigger: 'blur' },
+    { min: 8, message: 'Password must be at least 8 characters', trigger: 'blur' }
   ],
   confirmPassword: [
-    { required: true, message: '请再次输入新密码', trigger: 'blur' },
+    { required: true, message: 'Please re-enter new password', trigger: 'blur' },
     {
       validator(_, value) {
         if (value !== form.newPassword) {
-          return new Error('两次输入密码不一致');
+          return new Error('The two passwords do not match');
         }
       },
       trigger: 'blur'
@@ -91,13 +91,13 @@ function onSubmit() {
     console.log('sending payload', payload);
     userService.changePassword(payload)
       .then(() => {
-        ElMessage.success('密码修改成功，请重新登录');
+        ElMessage.success('Password changed successfully, please login again');
         userStore.logout();
         router.push('/login');
       })
       .catch(err => {
         console.log('request error', err);
-        ElMessage.error(err.message || '修改失败');
+        ElMessage.error(err.message || 'Failed to change password');
       })
 }
 

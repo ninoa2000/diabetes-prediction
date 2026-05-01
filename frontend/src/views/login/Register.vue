@@ -1,7 +1,7 @@
 <template>
   <div class="register-container">
     <div class="register-box">
-      <h2 class="register-title">用户注册</h2>
+      <h2 class="register-title">User Registration</h2>
       <el-form
         ref="registerFormRef"
         :model="registerForm"
@@ -9,44 +9,44 @@
         label-position="top"
         class="register-form"
       >
-        <el-form-item label="用户名" prop="username">
+        <el-form-item label="Username" prop="username">
           <el-input 
             v-model="registerForm.username"
-            placeholder="请输入用户名"
+            placeholder="Please enter username"
             clearable
           />
         </el-form-item>
         
-        <el-form-item label="姓名" prop="name">
+        <el-form-item label="Name" prop="name">
           <el-input 
             v-model="registerForm.name"
-            placeholder="请输入姓名"
+            placeholder="Please enter name"
             clearable
           />
         </el-form-item>
         
-        <el-form-item label="手机号" prop="phone">
+        <el-form-item label="Phone Number" prop="phone">
           <el-input 
             v-model="registerForm.phone"
-            placeholder="请输入手机号"
+            placeholder="Please enter phone number"
             clearable
           />
         </el-form-item>
         
-        <el-form-item label="密码" prop="password">
+        <el-form-item label="Password" prop="password">
           <el-input
             v-model="registerForm.password"
             type="password"
-            placeholder="请输入密码"
+            placeholder="Please enter password"
             show-password
           />
         </el-form-item>
         
-        <el-form-item label="确认密码" prop="confirmPassword">
+        <el-form-item label="Confirm Password" prop="confirmPassword">
           <el-input
             v-model="registerForm.confirmPassword"
             type="password"
-            placeholder="请再次输入密码"
+            placeholder="Please re-enter password"
             show-password
           />
         </el-form-item>
@@ -58,13 +58,13 @@
             class="register-button"
             @click="handleRegister"
           >
-            注册
+            Register
           </el-button>
         </el-form-item>
         
         <div class="register-footer">
-          <span>已有账号？</span>
-          <router-link to="/login">返回登录</router-link>
+          <span>Already have an account?</span>
+          <router-link to="/login">Back to Login</router-link>
         </div>
       </el-form>
     </div>
@@ -94,9 +94,9 @@ const registerForm = reactive({
 // Validate password match
 const validatePass = (rule, value, callback) => {
   if (value === '') {
-    callback(new Error('请再次输入密码'));
+    callback(new Error('Please re-enter password'));
   } else if (value !== registerForm.password) {
-    callback(new Error('两次输入密码不一致'));
+    callback(new Error('Passwords do not match'));
   } else {
     callback();
   }
@@ -105,19 +105,19 @@ const validatePass = (rule, value, callback) => {
 // Form validation rules
 const registerRules = reactive({
   username: [
-    { required: true, message: '请输入用户名', trigger: 'blur' },
-    { min: 3, max: 20, message: '长度在 3 到 20 个字符', trigger: 'blur' },
+    { required: true, message: 'Please enter username', trigger: 'blur' },
+    { min: 3, max: 20, message: 'Length should be 3 to 20 characters', trigger: 'blur' },
   ],
   name: [
-    { required: true, message: '请输入姓名', trigger: 'blur' },
+    { required: true, message: 'Please enter name', trigger: 'blur' },
   ],
   phone: [
-    { required: true, message: '请输入手机号', trigger: 'blur' },
-    { pattern: /^1[3-9]\d{9}$/, message: '请输入正确的手机号码', trigger: 'blur' },
+    { required: true, message: 'Please enter phone number', trigger: 'blur' },
+    { pattern: /^1[3-9]\d{9}$/, message: 'Please enter a valid phone number', trigger: 'blur' },
   ],
   password: [
-    { required: true, message: '请输入密码', trigger: 'blur' },
-    { min: 6, max: 20, message: '长度在 6 到 20 个字符', trigger: 'blur' },
+    { required: true, message: 'Please enter password', trigger: 'blur' },
+    { min: 6, max: 20, message: 'Length should be 6 to 20 characters', trigger: 'blur' },
   ],
   confirmPassword: [
     { required: true, validator: validatePass, trigger: 'blur' },
@@ -131,10 +131,10 @@ const handleRegister = () => {
       try {
         loading.value = true;
         await userStore.register(registerForm);
-        ElMessage.success('注册成功，请登录');
+        ElMessage.success('Registration successful, please login');
         router.push('/login');
       } catch (error) {
-        ElMessage.error(error.message || '注册失败，请重试');
+        ElMessage.error(error.message || 'Registration failed, please try again');
       } finally {
         loading.value = false;
       }

@@ -3,84 +3,84 @@
     <el-card class="profile-card" shadow="hover">
       <template #header>
         <div class="card-header">
-          <h2>个人信息</h2>
+          <h2>Profile Information</h2>
         </div>
       </template>
       
       <div class="profile-content">
         <!-- 医生表单 -->
         <el-form v-if="isDoctor" :model="profileForm" label-width="100px">
-          <el-form-item label="用户名">
+          <el-form-item label="Username">
             <el-input v-model="profileForm.username" disabled />
           </el-form-item>
           
-          <el-form-item label="姓名">
+          <el-form-item label="Full Name">
             <el-input v-model="profileForm.name" />
           </el-form-item>
           
          
           
-          <el-form-item label="手机号">
+          <el-form-item label="Phone Number">
             <el-input v-model="profileForm.phone" />
           </el-form-item>
           
-          <el-form-item label="邮箱">
+          <el-form-item label="Email">
             <el-input v-model="profileForm.email" />
           </el-form-item>
           
-          <el-form-item label="科室">
-            <el-select v-model="profileForm.department" placeholder="请选择科室" style="width: 100%">
-              <el-option label="内科" value="内科" />
-              <el-option label="外科" value="外科" />
-              <el-option label="妇产科" value="妇产科" />
-              <el-option label="内分泌科" value="内分泌科" />
-              <el-option label="眼科" value="眼科" />
-              <el-option label="耳鼻喉科" value="耳鼻喉科" />
-              <el-option label="口腔科" value="口腔科" />
-              <el-option label="皮肤科" value="皮肤科" />
-              <el-option label="精神科" value="精神科" />
-              <el-option label="传染科" value="传染科" />
-              <el-option label="康复科" value="康复科" />
-              <el-option label="中医科" value="中医科" />
+          <el-form-item label="Department">
+            <el-select v-model="profileForm.department" placeholder="Select Department" style="width: 100%">
+              <el-option label="Internal Medicine" value="Internal Medicine" />
+              <el-option label="Surgery" value="Surgery" />
+              <el-option label="Obstetrics and Gynecology" value="Obstetrics and Gynecology" />
+              <el-option label="Endocrinology" value="Endocrinology" />
+              <el-option label="Ophthalmology" value="Ophthalmology" />
+              <el-option label="ENT" value="ENT" />
+              <el-option label="Stomatology" value="Stomatology" />
+              <el-option label="Dermatology" value="Dermatology" />
+              <el-option label="Psychiatry" value="Psychiatry" />
+              <el-option label="Infectious Diseases" value="Infectious Diseases" />
+              <el-option label="Rehabilitation" value="Rehabilitation" />
+              <el-option label="Traditional Chinese Medicine" value="Traditional Chinese Medicine" />
             </el-select>
           </el-form-item>
           
-          <el-form-item label="职称">
-            <el-select v-model="profileForm.title" placeholder="请选择职称" style="width: 100%">
-              <el-option label="主任医师" value="主任医师" />
-              <el-option label="副主任医师" value="副主任医师" />
-              <el-option label="主治医师" value="主治医师" />
-              <el-option label="住院医师" value="住院医师" />
+          <el-form-item label="Job Title">
+            <el-select v-model="profileForm.title" placeholder="Select Job Title" style="width: 100%">
+              <el-option label="Chief Physician" value="Chief Physician" />
+              <el-option label="Associate Chief Physician" value="Associate Chief Physician" />
+              <el-option label="Attending Physician" value="Attending Physician" />
+              <el-option label="Resident Physician" value="Resident Physician" />
             </el-select>
           </el-form-item>
           
           <el-form-item>
-            <el-button type="primary" @click="handleSave">保存</el-button>
+            <el-button type="primary" @click="handleSave">Save</el-button>
           </el-form-item>
         </el-form>
 
         <!-- 普通用户表单 -->
         <el-form v-else :model="profileForm" label-width="100px">
-          <el-form-item label="用户名">
+          <el-form-item label="Username">
             <el-input v-model="profileForm.username" disabled />
           </el-form-item>
           
-          <el-form-item label="姓名">
+          <el-form-item label="Full Name">
             <el-input v-model="profileForm.name" />
           </el-form-item>
           
           
           
-          <el-form-item label="手机号">
+          <el-form-item label="Phone Number">
             <el-input v-model="profileForm.phone" />
           </el-form-item>
           
-          <el-form-item label="邮箱">
+          <el-form-item label="Email">
             <el-input v-model="profileForm.email" />
           </el-form-item>
           
           <el-form-item>
-            <el-button type="primary" @click="handleSave">保存</el-button>
+            <el-button type="primary" @click="handleSave">Save</el-button>
           </el-form-item>
         </el-form>
       </div>
@@ -147,11 +147,11 @@ const loadProfile = async () => {
         }
       }
     } else {
-      ElMessage.warning('未找到用户信息');
+      ElMessage.warning('User information not found');
     }
   } catch (error) {
-    console.error('加载个人信息失败:', error);
-    ElMessage.error('加载个人信息失败');
+    console.error('Failed to load profile:', error);
+    ElMessage.error('Failed to load profile');
   }
 };
 
@@ -169,7 +169,7 @@ const handleSave = async () => {
         title: profileForm.value.title
       };
       await doctorService.updateProfile(doctorData);
-      ElMessage.success('医生信息更新成功');
+      ElMessage.success('Doctor profile updated successfully');
     } else {
       // 更新用户信息
       const userData = {
@@ -179,12 +179,12 @@ const handleSave = async () => {
         email: profileForm.value.email
       };
       await userService.updateUser(userData);
-      ElMessage.success('个人信息更新成功');
+      ElMessage.success('Profile updated successfully');
     }
     await loadProfile();
   } catch (error) {
-    console.error('保存失败:', error);
-    ElMessage.error('保存失败: ' + (error.response?.data?.message || error.message));
+    console.error('Failed to save:', error);
+    ElMessage.error('Failed to save: ' + (error.response?.data?.message || error.message));
   }
 };
 
