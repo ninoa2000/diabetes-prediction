@@ -111,7 +111,7 @@ public class AuthServiceImpl implements AuthService {
                             e.setEmail(mongo.getEmail());
                             e.setName(mongo.getName());
                             e.setActive(mongo.isActive());
-                            e.setRoles("[\"ROLE_USER\"]");
+                            e.setRoles(mongo.getRoles().stream().map(r -> "\"" + r.name() + "\"").collect(Collectors.toList()).toString());
                             e.setCreatedAt(mongo.getCreatedAt());
                             e.setUpdatedAt(mongo.getUpdatedAt());
                             return usersRepository.save(e);
@@ -128,9 +128,12 @@ public class AuthServiceImpl implements AuthService {
                 .orElseThrow(() -> new UnauthorizedException("账号或密码错误"));
 
         // —— 4) 生成 JWT 并返回 —— //
+        List<SimpleGrantedAuthority> authorities = mongoUser.getRoles().stream()
+                .map(role -> new SimpleGrantedAuthority(role.name()))
+                .collect(Collectors.toList());
+
         Authentication auth = new UsernamePasswordAuthenticationToken(
-                mongoUser.getUsername(), null,
-                Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER"))
+                mongoUser.getUsername(), null, authorities
         );
         String token = jwtTokenProvider.generateToken(auth);
         return JwtResponse.fromUserAndToken(mongoUser, token);

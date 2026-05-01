@@ -1,23 +1,17 @@
 package com.example.chronicdisease.config;
 
-import com.example.chronicdisease.model.ChronicDisease;
-import com.example.chronicdisease.model.LatestResearch;
-import com.example.chronicdisease.model.SeasonalTip;
-import com.example.chronicdisease.model.HealthHabit;
-import com.example.chronicdisease.model.NutritionDiet;
-import com.example.chronicdisease.model.ChronicDiseaseMedication;
-import com.example.chronicdisease.repository.ChronicDiseaseRepository;
-import com.example.chronicdisease.repository.LatestResearchRepository;
-import com.example.chronicdisease.repository.SeasonalTipRepository;
-import com.example.chronicdisease.repository.HealthHabitRepository;
-import com.example.chronicdisease.repository.NutritionDietRepository;
-import com.example.chronicdisease.repository.ChronicDiseaseMedicationRepository;
+import com.example.chronicdisease.model.*;
+import com.example.chronicdisease.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 
 @Component
 public class DataInitializer implements CommandLineRunner {
@@ -38,6 +32,15 @@ public class DataInitializer implements CommandLineRunner {
     
     @Autowired
     private ChronicDiseaseMedicationRepository chronicDiseaseMedicationRepository;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private DoctorRepository doctorRepository;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
     
     @Override
     public void run(String... args) {
@@ -220,7 +223,7 @@ public class DataInitializer implements CommandLineRunner {
             // 研究12
             LatestResearch research12 = new LatestResearch();
             research12.setTitle("心脏病患者生活方式干预研究");
-            research12.setContent("综合生活方式干预可显著改善心脏病患者的生活质量和预后。");
+            research12.setContent("综合生活方式干预可显著改善心脏病患者的生活质量 and 预后。");
             research12.setSource("中国心血管病杂志");
             research12.setAuthor("黄教授");
             research12.setPublishDate(new Date());
@@ -311,7 +314,7 @@ public class DataInitializer implements CommandLineRunner {
             SeasonalTip winterTip1 = new SeasonalTip();
             winterTip1.setSeason("winter");
             winterTip1.setTitle("防寒保暖要点");
-            winterTip1.setContent("冬季寒冷易诱发心脑血管疾病。外出前做好充分保暖，尤其是头部、颈部和足部。突然进入温暖环境时，应先解开外套适应。");
+            winterTip1.setContent("冬季寒冷易诱发心脑血管疾病。外出前做好充分保暖，尤其是头部、颈部 and 足部。突然进入温暖环境时，应先解开外套适应。");
             winterTip1.setAdvice("冠心病患者冬季应减少户外活动，特别是在清晨和气温骤降时，出门前可服用备用救心药。");
             winterTip1.setOrder(1);
             seasonalTipRepository.save(winterTip1);
@@ -445,5 +448,62 @@ public class DataInitializer implements CommandLineRunner {
             coronary1.setOrder(1);
             chronicDiseaseMedicationRepository.save(coronary1);
         }
+
+        // Initialize Doctor accounts
+        if (!userRepository.existsByUsername("doctor")) {
+            User doctorUser = new User();
+            doctorUser.setUsername("doctor");
+            doctorUser.setPassword(passwordEncoder.encode("doctor123"));
+            doctorUser.setName("Dr. Sarah Smith");
+            doctorUser.setEmail("sarah.smith@clinic.com");
+            doctorUser.setPhone("1234567890");
+            doctorUser.setActive(true);
+            doctorUser.setCreatedAt(LocalDateTime.now());
+            
+            Set<User.Role> roles = new HashSet<>();
+            roles.add(User.Role.ROLE_DOCTOR);
+            doctorUser.setRoles(roles);
+            
+            User savedUser = userRepository.save(doctorUser);
+            
+            Doctor doctorProfile = new Doctor();
+            doctorProfile.setUserId(savedUser.getId());
+            doctorProfile.setName("Dr. Sarah Smith");
+            doctorProfile.setDepartment("Endocrinology");
+            doctorProfile.setSpecialty("Diabetes & Metabolism");
+            doctorProfile.setTitle("Senior Consultant");
+            doctorProfile.setHospitalName("City General Hospital");
+            doctorProfile.setAvailable(true);
+            doctorProfile.setCreatedAt(LocalDateTime.now());
+            doctorRepository.save(doctorProfile);
+        }
+
+        if (!userRepository.existsByUsername("doctor2")) {
+            User doctorUser2 = new User();
+            doctorUser2.setUsername("doctor2");
+            doctorUser2.setPassword(passwordEncoder.encode("doctor123"));
+            doctorUser2.setName("Dr. James Wilson");
+            doctorUser2.setEmail("james.wilson@clinic.com");
+            doctorUser2.setPhone("0987654321");
+            doctorUser2.setActive(true);
+            doctorUser2.setCreatedAt(LocalDateTime.now());
+            
+            Set<User.Role> roles = new HashSet<>();
+            roles.add(User.Role.ROLE_DOCTOR);
+            doctorUser2.setRoles(roles);
+            
+            User savedUser2 = userRepository.save(doctorUser2);
+            
+            Doctor doctorProfile2 = new Doctor();
+            doctorProfile2.setUserId(savedUser2.getId());
+            doctorProfile2.setName("Dr. James Wilson");
+            doctorProfile2.setDepartment("General Medicine");
+            doctorProfile2.setSpecialty("Chronic Disease Management");
+            doctorProfile2.setTitle("Chief Physician");
+            doctorProfile2.setHospitalName("Metropolitan Health Center");
+            doctorProfile2.setAvailable(true);
+            doctorProfile2.setCreatedAt(LocalDateTime.now());
+            doctorRepository.save(doctorProfile2);
+        }
     }
-} 
+}

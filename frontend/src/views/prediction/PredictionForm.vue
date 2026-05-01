@@ -188,11 +188,68 @@
             <div class="result-value" :style="{ color: getProbColor(selectedCase.probability) }">{{ formatRiskDisplay(selectedCase.probability) }} <small>({{ (selectedCase.probability * 100).toFixed(1) }}%)</small></div>
           </div>
           <div class="result-suggestion"><strong>Clinical Note:</strong> {{ selectedCase.suggestion }}</div>
+          
+          <!-- Consultation Button -->
+          <div class="consultation-action" style="margin-top: 15px; text-align: right;">
+            <el-button type="primary" @click="openConsultation(selectedCase)">
+              <el-icon style="margin-right: 5px;"><ChatDotRound /></el-icon>
+              Consult Professional Doctor
+            </el-button>
+          </div>
         </div>
         <el-alert title="Medical Disclaimer" type="warning" :closable="false" show-icon style="margin-bottom:20px">Rough estimate only. Seek medical guidance.</el-alert>
         <el-divider />
         <div class="data-row" v-for="(row, rowIndex) in chunkedCaseData" :key="rowIndex">
           <div v-for="(value, key) in row" :key="key" class="data-item-small"><div class="data-label-small">{{ key }}</div><div class="data-value-small">{{ value }}</div></div>
+        </div>
+      </div>
+    </el-dialog>
+
+    <!-- Doctor Consultation Dialog -->
+    <el-dialog v-model="consultationVisible" title="Clinical Consultation" width="600px" custom-class="premium-dialog">
+      <div v-if="loadingDoctors" class="loading-doctors">
+        <el-icon class="is-loading"><Loading /></el-icon>
+        <p>Connecting to Clinical Staff...</p>
+      </div>
+      <div v-else-if="!boundDoctor" class="doctor-selection">
+        <h4>Select a Specialist for Consultation</h4>
+        <div class="doctor-list">
+          <div v-for="doc in availableDoctors" :key="doc.id" class="doctor-card-item" @click="bindAndConsult(doc)">
+            <div class="doc-info">
+              <div class="doc-name">{{ doc.name }}</div>
+              <div class="doc-dept">{{ doc.department }} | {{ doc.title }}</div>
+              <div class="doc-hosp">{{ doc.hospitalName }}</div>
+            </div>
+            <el-button type="primary" plain size="small">Consult</el-button>
+          </div>
+        </div>
+      </div>
+      <div v-else class="message-composer">
+        <div class="bound-doctor-info">
+          <div class="doc-avatar-small">{{ boundDoctor.name.charAt(0) }}</div>
+          <div class="doc-text">
+            <span class="name">{{ boundDoctor.name }}</span>
+            <span class="dept">{{ boundDoctor.specialty }}</span>
+          </div>
+          <el-tag size="small" type="success" effect="plain">Connected</el-tag>
+        </div>
+        <div class="consultation-context" v-if="consultationContext">
+          <span class="context-label">Relating to Case:</span>
+          <span class="context-value">{{ formatRiskDisplay(consultationContext.probability) }} ({{ (consultationContext.probability * 100).toFixed(0) }}%)</span>
+        </div>
+        <el-input
+          v-model="consultationMessage"
+          type="textarea"
+          :rows="4"
+          placeholder="Describe your symptoms or ask a specific question to the doctor..."
+          class="message-input"
+        />
+        <div class="consultation-footer">
+          <el-button @click="consultationVisible = false">Cancel</el-button>
+          <el-button type="primary" :loading="sendingMessage" @click="sendMessage">
+            <el-icon style="margin-right: 5px;"><Promotion /></el-icon>
+            Send Consultation Request
+          </el-button>
         </div>
       </div>
     </el-dialog>
@@ -202,9 +259,11 @@
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import { ElMessage } from 'element-plus'
-import { UploadFilled, Refresh, Monitor, DataAnalysis, Camera, VideoCamera, Picture, Loading, Lock, MagicStick, Document, CircleClose } from '@element-plus/icons-vue'
+import { UploadFilled, Refresh, Monitor, DataAnalysis, Camera, VideoCamera, Picture, Loading, Lock, MagicStick, Document, CircleClose, ChatDotRound, Promotion } from '@element-plus/icons-vue'
 import * as XLSX from 'xlsx'
 import { predictionService } from '@/api/prediction'
+import { doctorService } from '@/api/doctor'
+import { messageService } from '@/api/message'
 
 const modelType = ref('')
 const previewData = ref([])
@@ -215,6 +274,15 @@ const fileInput = ref(null)
 const imageInput = ref(null)
 const selectedCase = ref(null)
 const caseDialogVisible = ref(false)
+
+// Consultation State
+const consultationVisible = ref(false)
+const loadingDoctors = ref(false)
+const boundDoctor = ref(null)
+const availableDoctors = ref([])
+const consultationMessage = ref('')
+const consultationContext = ref(null)
+const sendingMessage = ref(false)
 
 // AI Vision State
 const scannerVisible = ref(false)
@@ -377,6 +445,58 @@ const chunkedCaseData = computed(() => {
 const formatDate = (ds) => new Date(ds).toLocaleString()
 const formatDateShort = (ds) => new Date(ds).toLocaleDateString()
 
+// Consultation Methods
+const openConsultation = async (caseData) => {
+  consultationContext.value = caseData
+  consultationVisible.value = true
+  loadingDoctors.value = true
+  consultationMessage.value = `Hello Doctor, I've just received a ${formatRiskDisplay(caseData.probability)} prediction for diabetes (Probability: ${(caseData.probability * 100).toFixed(1)}%). Could you please review my clinical data?`
+  
+  try {
+    const boundRes = await doctorService.getBoundDoctor()
+    if (boundRes.data) {
+      boundDoctor.value = boundRes.data
+    } else {
+      const allRes = await doctorService.getAllDoctors()
+      availableDoctors.value = Array.isArray(allRes.data) ? allRes.data : []
+    }
+  } catch (e) {
+    console.error('Failed to load doctor info:', e)
+    const allRes = await doctorService.getAllDoctors()
+    availableDoctors.value = Array.isArray(allRes.data) ? allRes.data : []
+  } finally {
+    loadingDoctors.value = false
+  }
+}
+
+const bindAndConsult = async (doctor) => {
+  try {
+    await doctorService.bindDoctor(doctor.id || doctor.userId)
+    boundDoctor.value = doctor
+    ElMessage.success(`Successfully connected with ${doctor.name}`)
+  } catch (e) {
+    console.error('Binding failed:', e)
+    ElMessage.error('Failed to connect with doctor')
+  }
+}
+
+const sendMessage = async () => {
+  if (!consultationMessage.value.trim()) return
+  sendingMessage.value = true
+  try {
+    const doctorId = boundDoctor.value.id || boundDoctor.value.userId
+    await messageService.sendMessage(doctorId, consultationMessage.value)
+    ElMessage.success('Consultation request sent successfully!')
+    consultationVisible.value = false
+    consultationMessage.value = ''
+  } catch (e) {
+    console.error('Message failed:', e)
+    ElMessage.error('Failed to send message')
+  } finally {
+    sendingMessage.value = false
+  }
+}
+
 onMounted(() => loadCases())
 onBeforeUnmount(() => { if (stream) stream.getTracks().forEach(t => t.stop()) })
 </script>
@@ -454,6 +574,30 @@ onBeforeUnmount(() => { if (stream) stream.getTracks().forEach(t => t.stop()) })
 
 .stage-footer { margin-top: 40px; display: flex; justify-content: flex-start; }
 .predict-btn { padding: 16px 40px; height: auto; font-size: 16px; font-weight: 800; border-radius: 12px; }
+
+/* Consultation Styles */
+.loading-doctors { text-align: center; padding: 40px; }
+.doctor-selection h4 { margin-top: 0; color: #64748b; font-size: 14px; }
+.doctor-list { margin-top: 20px; display: grid; gap: 12px; }
+.doctor-card-item { display: flex; justify-content: space-between; align-items: center; padding: 16px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; cursor: pointer; transition: all 0.2s; }
+.doctor-card-item:hover { border-color: #3b82f6; background: #f0f7ff; }
+.doc-name { font-weight: 800; color: #1e293b; }
+.doc-dept { font-size: 12px; color: #64748b; margin: 4px 0; }
+.doc-hosp { font-size: 11px; color: #94a3b8; }
+
+.message-composer { display: flex; flex-direction: column; gap: 20px; }
+.bound-doctor-info { display: flex; align-items: center; gap: 12px; padding: 12px; background: #f0fdf4; border-radius: 12px; border: 1px solid #bbf7d0; }
+.doc-avatar-small { width: 32px; height: 32px; background: #10b981; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; }
+.doc-text { flex: 1; display: flex; flex-direction: column; }
+.doc-text .name { font-weight: 700; font-size: 14px; }
+.doc-text .dept { font-size: 11px; color: #64748b; }
+
+.consultation-context { padding: 10px 12px; background: #fffbeb; border-radius: 8px; border: 1px solid #fef3c7; font-size: 12px; }
+.context-label { color: #92400e; font-weight: 700; margin-right: 8px; }
+.context-value { color: #b45309; }
+
+.message-input :deep(.el-textarea__inner) { border-radius: 12px; padding: 12px; font-family: inherit; }
+.consultation-footer { display: flex; justify-content: flex-end; gap: 12px; margin-top: 10px; }
 
 :deep(.premium-table) { border-radius: 12px; overflow: hidden; border: 1px solid #f1f5f9; }
 </style>
