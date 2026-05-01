@@ -36,13 +36,13 @@ const routes = [
     path: '/login',
     name: 'Login',
     component: Login,
-    meta: { requiresAuth: false, title: '登录' },
+    meta: { requiresAuth: false, title: 'Login' },
   },
   {
     path: '/register',
     name: 'Register',
     component: Register,
-    meta: { requiresAuth: false, title: '注册' },
+    meta: { requiresAuth: false, title: 'Register' },
   },
   {
     path: '/',
@@ -62,87 +62,87 @@ const routes = [
         path: 'home',
         name: 'Home',
         component: Home,
-        meta: { requiresAuth: true, title: '首页', role: [ROLE_USER] },
+        meta: { requiresAuth: true, title: 'Home', role: [ROLE_USER] },
       },
       {
         path: 'doctor/home',
         name: 'DoctorHome',
         component: DoctorHome,
-        meta: { requiresAuth: true, title: '首页', role: [ROLE_DOCTOR] },
+        meta: { requiresAuth: true, title: 'Home', role: [ROLE_DOCTOR] },
       },
       {
         path: 'prediction',
         name: 'Prediction',
         component: PredictionForm,
-        meta: { requiresAuth: true, title: '健康预测', role: [ROLE_USER] },
+        meta: { requiresAuth: true, title: 'Health Prediction', role: [ROLE_USER] },
       },
       {
         path: 'prediction/result',
         name: 'PredictionResult',
         component: PredictionResult,
-        meta: { requiresAuth: true, title: '预测结果', role: [ROLE_USER] },
+        meta: { requiresAuth: true, title: 'Prediction Result', role: [ROLE_USER] },
       },
       {
         path: 'doctor-binding',
         name: 'DoctorBinding',
         component: DoctorBinding,
-        meta: { requiresAuth: true, title: '绑定医生', role: [ROLE_USER] },
+        meta: { requiresAuth: true, title: 'Bind Doctor', role: [ROLE_USER] },
       },
       {
         path: 'message',
         name: 'Message',
         component: Message,
-        meta: { requiresAuth: true, title: '我的留言', role: [ROLE_USER] },
+        meta: { requiresAuth: true, title: 'My Messages', role: [ROLE_USER] },
       },
       {
         path: 'profile',
         name: 'UserProfile',
         component: UserProfile,
-        meta: { requiresAuth: true, title: '个人信息', role: [ROLE_ADMIN, ROLE_DOCTOR, ROLE_USER] },
+        meta: { requiresAuth: true, title: 'Profile', role: [ROLE_ADMIN, ROLE_DOCTOR, ROLE_USER] },
       },
       {
          path: 'user/change-password',
         name: 'ChangePassword',
         component: ChangePassword,
-        meta: { requiresAuth: true, title: '修改密码', role: [ROLE_USER, ROLE_DOCTOR] },
+        meta: { requiresAuth: true, title: 'Change Password', role: [ROLE_USER, ROLE_DOCTOR] },
       },
       // Admin routes
       {
         path: 'admin/doctors',
         name: 'AdminDoctorManage',
         component: AdminDoctorManage,
-        meta: { requiresAuth: true, title: '医生管理', role: [ROLE_ADMIN] },
+        meta: { requiresAuth: true, title: 'Doctor Management', role: [ROLE_ADMIN] },
       },
       {
         path: 'admin/users',
         name: 'AdminUserManage',
         component: AdminUserManage,
-        meta: { requiresAuth: true, title: '用户管理', role: [ROLE_ADMIN] },
+        meta: { requiresAuth: true, title: 'User Management', role: [ROLE_ADMIN] },
       },
       {
         path: 'admin/KnowledgeManage',
         name: 'KnowledgeManage',
         component: KnowledgeManage,
-        meta: { requiresAuth: false, title: '健康科普知识管理', role: [ROLE_ADMIN ] },
+        meta: { requiresAuth: false, title: 'Knowledge Management', role: [ROLE_ADMIN ] },
       },
       // Doctor routes
       {
         path: 'doctor/patients',
         name: 'DoctorPatient',
         component: DoctorPatient,
-        meta: { requiresAuth: true, title: '我的患者', role: [ROLE_DOCTOR] },
+        meta: { requiresAuth: true, title: 'My Patients', role: [ROLE_DOCTOR] },
       },
       {
         path: 'doctor/messages',
         name: 'DoctorMessage',
         component: DoctorMessage,
-        meta: { requiresAuth: true, title: '患者留言', role: [ROLE_DOCTOR] },
+        meta: { requiresAuth: true, title: 'Patient Messages', role: [ROLE_DOCTOR] },
       },
       {
         path: 'doctor/patients/:patientId/cases',
         name: 'PatientCases',
         component: () => import('@/views/doctor/PatientCases.vue'),
-        meta: { requiresAuth: true, title: '患者病例', role: [ROLE_DOCTOR] }
+        meta: { requiresAuth: true, title: 'Patient Cases', role: [ROLE_DOCTOR] }
       },
       
       // Education routes
@@ -150,25 +150,25 @@ const routes = [
         path: 'education/disease-info',
         name: 'ChronicDiseaseInfo',
         component: ChronicDiseaseInfo,
-        meta: { requiresAuth: false, title: '糖尿病知识', role: [ROLE_ADMIN, ROLE_DOCTOR, ROLE_USER] },
+        meta: { requiresAuth: false, title: 'Diabetes Info', role: [ROLE_ADMIN, ROLE_DOCTOR, ROLE_USER] },
       },
       {
         path: 'education/health-guide',
         name: 'HealthGuide',
         component: HealthGuide,
-        meta: { requiresAuth: false, title: '健康生活指南', role: [ROLE_ADMIN, ROLE_DOCTOR, ROLE_USER] },
+        meta: { requiresAuth: false, title: 'Health Guide', role: [ROLE_ADMIN, ROLE_DOCTOR, ROLE_USER] },
       },
       {
         path: 'education/latest-research',
         name: 'LatestResearch',
         component: LatestResearch,
-        meta: { requiresAuth: false, title: '最新研究资讯', role: [ROLE_ADMIN, ROLE_DOCTOR, ROLE_USER] },
+        meta: { requiresAuth: false, title: 'Latest Research', role: [ROLE_ADMIN, ROLE_DOCTOR, ROLE_USER] },
       },
       {
         path: 'education/seasonal-tips',
         name: 'SeasonalTips',
         component: SeasonalTips,
-        meta: { requiresAuth: false, title: '健康爱好建议', role: [ROLE_ADMIN, ROLE_DOCTOR, ROLE_USER] },
+        meta: { requiresAuth: false, title: 'Health Tips', role: [ROLE_ADMIN, ROLE_DOCTOR, ROLE_USER] },
       },
     ],
   },
@@ -194,7 +194,7 @@ router.beforeEach((to, from, next) => {
   
   // Set page title
   if (to.meta.title) {
-    document.title = `${to.meta.title} - 糖尿病预测系统`;
+    document.title = `${to.meta.title} - Diabetes Prediction System`;
   }
   
   // Check auth requirements
