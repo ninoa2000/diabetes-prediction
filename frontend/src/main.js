@@ -7,6 +7,7 @@ import router from './router';
 
 // Import all Element Plus icons
 import * as ElementPlusIconsVue from '@element-plus/icons-vue';
+import './assets/styles/theme.css';
 
 // Create Vue app
 const app = createApp(App);

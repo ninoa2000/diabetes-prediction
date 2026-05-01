@@ -22,6 +22,13 @@ apiClient.interceptors.request.use(
     const user = JSON.parse(localStorage.getItem('user'))
     if (user && user.id) {
       config.headers['X-User-ID'] = user.id
+      
+      // Inject userId into request body for POST/PUT if not already present
+      if (['post', 'put'].includes(config.method.toLowerCase()) && config.data && typeof config.data === 'object') {
+        if (!config.data.userId) {
+          config.data.userId = user.id
+        }
+      }
     }
 
     return config

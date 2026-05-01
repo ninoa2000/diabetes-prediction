@@ -1,386 +1,245 @@
 <template>
-  <div class="prediction-result-container">
+  <div class="prediction-result-container fade-in">
     <template v-if="predictionData">
-      <el-card class="result-card">
+      <el-card class="result-card premium-card" shadow="never">
         <template #header>
           <div class="card-header">
-            <h2>Prediction Results</h2>
-            <div>
+            <div class="title-group">
+              <el-icon class="header-main-icon"><Monitor /></el-icon>
+              <h2>Clinical Risk Assessment</h2>
+            </div>
+            <div class="action-group">
               <el-button 
-                type="primary" 
+                type="info" 
                 plain 
-                size="small" 
                 @click="goBack"
+                class="hover-lift"
               >
-                Back
+                New Analysis
               </el-button>
               <el-button 
-                type="success" 
-                plain 
-                size="small" 
+                type="primary" 
                 @click="printResult"
+                class="hover-lift"
               >
-                Print Results
+                Export Report
               </el-button>
             </div>
           </div>
         </template>
         
         <div class="prediction-main">
-          <div class="risk-gauge">
-            <div ref="gaugeChartRef" class="chart-container"></div>
-            <div class="risk-level">
-              <span>Risk Level:</span>
-              <el-tag :type="riskLevelType">{{ predictionData.result.riskLevel }}</el-tag>
+          <!-- Left: Visualization -->
+          <div class="risk-visualization">
+            <div class="gauge-wrapper">
+              <div ref="gaugeChartRef" class="chart-container"></div>
+              <div class="gauge-overlay">
+                <span class="percentage-display" :style="{ color: dynamicColor }">
+                  {{ predictionData.result.riskPercentage }}%
+                </span>
+                <span class="label-display">Probability</span>
+              </div>
+            </div>
+            <div class="risk-badge-container">
+              <div class="status-pill-large" :style="{ backgroundColor: dynamicLightColor, color: dynamicColor, borderColor: dynamicColor }">
+                {{ riskStatus }}
+              </div>
             </div>
           </div>
           
-          <div class="risk-details">
-            <h3>Risk Analysis</h3>
-            <p>
-              Based on the health data you provided, your diabetes risk index is <strong>{{ predictionData.result.riskPercentage }}%</strong>,
-              belonging to the <strong>{{ predictionData.result.riskLevel }}</strong> risk level.
-            </p>
-            
-            <h3>Health Recommendations</h3>
-            <el-alert
-              v-for="(recommendation, index) in predictionData.result.recommendations"
-              :key="index"
-              type="info"
-              :closable="false"
-              show-icon
-            >
-              {{ recommendation }}
-            </el-alert>
-            
-            <div class="contributing-factors" v-if="contributingFactors.length > 0">
-              <h3>Primary Risk Factors</h3>
-              <el-tag 
-                v-for="factor in contributingFactors" 
-                :key="factor.name"
-                :type="factor.type"
-                effect="dark"
-                class="factor-tag"
-              >
-                {{ factor.label }}
+          <!-- Right: Summary -->
+          <div class="risk-summary">
+            <div class="algorithm-badge-row">
+              <span class="label">Analytical Model:</span>
+              <el-tag effect="dark" class="algo-pill-solid">
+                {{ currentAlgorithm }}
               </el-tag>
+            </div>
+
+            <div class="report-text">
+              <h3>Diagnostic Summary</h3>
+              <p>
+                Integrated health analysis identifies a risk index of 
+                <span class="dynamic-value" :style="{ color: dynamicColor }">{{ predictionData.result.riskPercentage }}%</span>.
+                This indicates a <span class="dynamic-value" :style="{ color: dynamicColor }">{{ riskStatus }}</span> profile based on current metrics.
+              </p>
+            </div>
+            
+            <div class="recommendations-section">
+              <h3>Personalized Protocols</h3>
+              <div class="recommendation-list">
+                <div 
+                  v-for="(rec, index) in predictionData.result.recommendations" 
+                  :key="index" 
+                  class="rec-item"
+                >
+                  <div class="rec-bullet" :style="{ backgroundColor: dynamicColor }"></div>
+                  <span>{{ rec }}</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
-        
+
+        <div class="disclaimer-section">
+          <el-alert
+            title="Medical Disclaimer"
+            type="warning"
+            :closable="false"
+            show-icon
+            class="soft-alert"
+          >
+            <p>This report is a <strong>rough estimate</strong> generated for research/testing purposes. It is not a clinical diagnosis. Please consult a medical professional for guidance.</p>
+          </el-alert>
+        </div>
+
+        <el-divider />
+
         <div class="health-data-summary">
-          <h3>Health Data Summary</h3>
-          <el-descriptions border :column="3">
-            <el-descriptions-item label="Age">{{ predictionData.healthData.age }} years</el-descriptions-item>
-            <el-descriptions-item label="Gender">{{ predictionData.healthData.gender === 'male' ? 'Male' : 'Female' }}</el-descriptions-item>
-            <el-descriptions-item label="BMI">{{ predictionData.healthData.bmi }}</el-descriptions-item>
-            <el-descriptions-item label="Blood Pressure">
-              {{ predictionData.healthData.bloodPressure.systolic }}/{{ predictionData.healthData.bloodPressure.diastolic }} mmHg
-            </el-descriptions-item>
-            <el-descriptions-item label="Blood Sugar">{{ predictionData.healthData.bloodSugar }} mg/dL</el-descriptions-item>
-            <el-descriptions-item label="Cholesterol">{{ predictionData.healthData.cholesterol }} mg/dL</el-descriptions-item>
-            <el-descriptions-item label="Family History">{{ predictionData.healthData.familyHistory ? 'Yes' : 'No' }}</el-descriptions-item>
-            <el-descriptions-item label="Smoking">{{ predictionData.healthData.smoking ? 'Yes' : 'No' }}</el-descriptions-item>
-            <el-descriptions-item label="Alcohol">{{ predictionData.healthData.alcohol ? 'Yes' : 'No' }}</el-descriptions-item>
-            <el-descriptions-item label="Exercise">{{ predictionData.healthData.exercise ? 'Yes' : 'No' }}</el-descriptions-item>
-          </el-descriptions>
+          <div class="summary-header">
+            <h3>Clinical Metrics</h3>
+            <span class="timestamp">Tested on: {{ reportDate }}</span>
+          </div>
+          <div class="data-grid">
+            <div class="data-cell" v-for="(val, label) in profileDisplay" :key="label">
+              <span class="d-label">{{ label }}</span>
+              <span class="d-value">{{ val }}</span>
+            </div>
+          </div>
         </div>
       </el-card>
     </template>
     
-    <el-empty 
-      v-else 
-      description="No prediction data" 
-      :image-size="200"
-    >
-      <el-button type="primary" @click="goToPrediction">Start Prediction</el-button>
+    <el-empty v-else description="No Data Available">
+      <el-button type="primary" @click="goBack">Start Analysis</el-button>
     </el-empty>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 import * as echarts from 'echarts';
+import { Monitor } from '@element-plus/icons-vue';
 
 const router = useRouter();
 const gaugeChartRef = ref(null);
 let gaugeChart = null;
-
-// Get prediction data from localStorage
 const predictionData = ref(null);
+const reportDate = ref(new Date().toLocaleDateString());
 
-// Determine risk level tag type
-const riskLevelType = computed(() => {
-  if (!predictionData.value) return '';
-  
-  const level = predictionData.value.result.riskLevel;
-  switch (level) {
-    case 'Low': return 'success';
-    case 'Moderate': return 'warning';
-    case 'High': return 'danger';
-    case 'Very High': return 'danger';
-    default: return 'info';
-  }
+const getVar = (name) => getComputedStyle(document.documentElement).getPropertyValue(name).trim() || '#000000';
+
+const riskStatus = computed(() => {
+  if (!predictionData.value) return 'NORMAL';
+  const prob = predictionData.value.result.riskPercentage;
+  if (prob < 30) return 'LOW RISK';
+  if (prob < 70) return 'MODERATE RISK';
+  return 'HIGH RISK';
 });
 
-// Determine contributing factors based on health data
-const contributingFactors = computed(() => {
-  if (!predictionData.value) return [];
-  
-  const factors = [];
-  const data = predictionData.value.healthData;
-  
-  // Check individual factors and add to list if they contribute to risk
-  if (data.age > 50) {
-    factors.push({ label: 'Older Age', type: 'warning', name: 'age' });
-  }
-  
-  if (data.bloodPressure.systolic > 130 || data.bloodPressure.diastolic > 80) {
-    factors.push({ label: 'High Blood Pressure', type: 'danger', name: 'blood_pressure' });
-  }
-  
-  if (data.bloodSugar > 100) {
-    factors.push({ label: 'High Blood Sugar', type: 'danger', name: 'blood_sugar' });
-  }
-  
-  if (data.cholesterol > 200) {
-    factors.push({ label: 'High Cholesterol', type: 'danger', name: 'cholesterol' });
-  }
-  
-  if (data.bmi > 25) {
-    factors.push({ label: 'High BMI', type: 'warning', name: 'bmi' });
-  }
-  
-  if (data.familyHistory) {
-    factors.push({ label: 'Family History', type: 'warning', name: 'family_history' });
-  }
-  
-  if (data.smoking) {
-    factors.push({ label: 'Smoking', type: 'danger', name: 'smoking' });
-  }
-  
-  if (data.alcohol) {
-    factors.push({ label: 'Alcohol', type: 'warning', name: 'alcohol' });
-  }
-  
-  if (!data.exercise) {
-    factors.push({ label: 'Lack of Exercise', type: 'warning', name: 'exercise' });
-  }
-  
-  return factors;
+const dynamicColor = computed(() => {
+  if (!predictionData.value) return '#94a3b8';
+  const prob = predictionData.value.result.riskPercentage;
+  if (prob < 30) return getVar('--color-success');
+  if (prob < 70) return getVar('--color-warning');
+  return getVar('--color-danger');
 });
 
-// Initialize gauge chart
+const dynamicLightColor = computed(() => {
+  if (!predictionData.value) return '#f8fafc';
+  const prob = predictionData.value.result.riskPercentage;
+  if (prob < 30) return getVar('--color-success-light');
+  if (prob < 70) return getVar('--color-warning-light');
+  return getVar('--color-danger-light');
+});
+
+const currentAlgorithm = computed(() => {
+  const model = localStorage.getItem('modelType') || 'svm';
+  const names = { 'svm': 'SVM', 'xgboost': 'XGBoost', 'random_forest': 'Random Forest', 'mlp': 'MLP', 'decision_tree': 'Decision Tree' };
+  return names[model] || 'Standard';
+});
+
+const profileDisplay = computed(() => {
+  if (!predictionData.value) return {};
+  const d = predictionData.value.healthData;
+  return {
+    'Age': `${d.age} yrs`,
+    'Gender': d.gender,
+    'BMI': d.bmi,
+    'BP (Systolic)': d.bloodPressure.systolic,
+    'BP (Diastolic)': d.bloodPressure.diastolic,
+    'Blood Sugar': d.bloodSugar
+  };
+});
+
 const initGaugeChart = () => {
   if (!predictionData.value || !gaugeChartRef.value) return;
-  
-  const riskPercentage = predictionData.value.result.riskPercentage;
-  
-  // Set up chart options
-  const option = {
-    series: [
-      {
-        type: 'gauge',
-        progress: {
-          show: true,
-          width: 18
-        },
-        axisLine: {
-          lineStyle: {
-            width: 18,
-            color: [
-              [0.2, '#67C23A'],  // Low risk - green
-              [0.5, '#E6A23C'],  // Moderate risk - yellow
-              [0.8, '#F56C6C'],  // High risk - red
-              [1, '#8B0000']     // Very high risk - dark red
-            ]
-          }
-        },
-        axisTick: { show: false },
-        splitLine: { show: false },
-        axisLabel: { show: false },
-        anchor: { show: false },
-        pointer: { show: false },
-        title: {
-          show: true,
-          offsetCenter: [0, '30%'],
-          fontSize: 20,
-          fontWeight: 'bold',
-          color: '#303133',
-          formatter: riskPercentage + '%'
-        },
-        detail: {
-          valueAnimation: true,
-          fontSize: 16,
-          color: '#303133',
-          offsetCenter: [0, '60%'],
-          formatter: 'Diabetes Risk Index'
-        },
-        data: [{ value: riskPercentage }]
-      }
-    ]
-  };
-  
-  // Initialize chart
   gaugeChart = echarts.init(gaugeChartRef.value);
-  gaugeChart.setOption(option);
-  
-  // Handle window resize
-  window.addEventListener('resize', handleResize);
+  gaugeChart.setOption({
+    series: [{
+      type: 'gauge', startAngle: 180, endAngle: 0, radius: '100%', center: ['50%', '85%'],
+      progress: { show: true, width: 12, itemStyle: { color: dynamicColor.value } },
+      axisLine: { lineStyle: { width: 12, color: [[1, '#f1f5f9']] } },
+      axisTick: { show: false }, splitLine: { show: false }, axisLabel: { show: false }, anchor: { show: false }, pointer: { show: false }, detail: { show: false },
+      data: [{ value: predictionData.value.result.riskPercentage }]
+    }]
+  });
 };
 
-// Handle window resize for chart
-const handleResize = () => {
-  if (gaugeChart) {
-    gaugeChart.resize();
-  }
-};
+const goBack = () => router.push('/prediction');
+const printResult = () => window.print();
 
-// Go back to prediction form
-const goBack = () => {
-  router.push('/prediction');
-};
-
-// Go to prediction if no data
-const goToPrediction = () => {
-  router.push('/prediction');
-};
-
-// Print result
-const printResult = () => {
-  window.print();
-};
-
-// On component mount
 onMounted(() => {
-  // Get prediction data from localStorage
-  const storedData = localStorage.getItem('current_prediction');
-  if (storedData) {
-    predictionData.value = JSON.parse(storedData);
-    
-    // Initialize chart after DOM update
-    setTimeout(() => {
-      initGaugeChart();
-    }, 100);
+  const stored = localStorage.getItem('current_prediction');
+  if (stored) {
+    predictionData.value = JSON.parse(stored);
+    setTimeout(() => initGaugeChart(), 200);
   }
 });
-
-// Clean up when component is unmounted
-const onUnmounted = () => {
-  if (gaugeChart) {
-    gaugeChart.dispose();
-    window.removeEventListener('resize', handleResize);
-  }
-};
 </script>
 
 <style scoped>
-.prediction-result-container {
-  max-width: 900px;
-  margin: 0 auto;
-}
+.prediction-result-container { max-width: 900px; margin: 0 auto; padding: 20px; }
+.card-header { display: flex; justify-content: space-between; align-items: center; }
+.title-group { display: flex; align-items: center; gap: 10px; }
+.header-main-icon { color: var(--color-primary); font-size: 20px; }
+.card-header h2 { margin: 0; font-size: 18px; font-weight: 700; color: #1e293b; }
 
-.result-card {
-  margin-bottom: 20px;
-}
+.prediction-main { display: grid; grid-template-columns: 320px 1fr; gap: 30px; padding: 20px 0; }
+.risk-visualization { display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.gauge-wrapper { width: 100%; height: 160px; position: relative; }
+.chart-container { width: 100%; height: 180px; }
+.gauge-overlay { position: absolute; bottom: 0; left: 0; right: 0; text-align: center; }
+.percentage-display { font-size: 36px; font-weight: 800; }
+.label-display { font-size: 12px; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; }
 
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
+.status-pill-large { margin-top: 20px; padding: 6px 20px; border-radius: 30px; font-weight: 800; font-size: 14px; border: 1px solid transparent; }
 
-.card-header h2 {
-  margin: 0;
-  font-size: 20px;
-  font-weight: 600;
-}
+.risk-summary { display: flex; flex-direction: column; gap: 20px; }
+.algorithm-badge-row { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #64748b; }
+.algo-pill-solid { background-color: var(--color-algorithm) !important; color: var(--color-algorithm-text) !important; font-weight: 800; border: none; font-size: 12px; padding: 4px 12px; border-radius: 8px; }
 
-.prediction-main {
-  display: flex;
-  margin-bottom: 30px;
-}
+.report-text h3, .recommendations-section h3 { font-size: 14px; font-weight: 700; color: #1e293b; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+.report-text p { font-size: 15px; color: #475569; line-height: 1.6; }
+.dynamic-value { font-weight: 700; }
 
-.risk-gauge {
-  flex: 0 0 40%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-}
+.recommendation-list { display: flex; flex-direction: column; gap: 8px; }
+.rec-item { display: flex; align-items: center; gap: 10px; font-size: 14px; color: #475569; }
+.rec-bullet { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
 
-.chart-container {
-  width: 100%;
-  height: 250px;
-}
+.disclaimer-section { margin-top: 10px; }
+.soft-alert { border: none; background-color: #fffbeb; border-radius: 12px; }
 
-.risk-level {
-  margin-top: 10px;
-  font-size: 16px;
-}
+.health-data-summary { margin-top: 20px; }
+.summary-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+.summary-header h3 { font-size: 14px; font-weight: 700; margin: 0; color: #1e293b; }
+.timestamp { font-size: 12px; color: #94a3b8; }
 
-.risk-details {
-  flex: 0 0 60%;
-  padding-left: 20px;
-}
+.data-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px; }
+.data-cell { background: #f8fafc; padding: 12px; border-radius: 10px; border: 1px solid #f1f5f9; }
+.d-label { font-size: 10px; color: #94a3b8; text-transform: uppercase; font-weight: 700; display: block; margin-bottom: 2px; }
+.d-value { font-size: 15px; font-weight: 600; color: #1e293b; }
 
-.risk-details h3 {
-  margin-top: 0;
-  margin-bottom: 15px;
-  font-size: 16px;
-  font-weight: 600;
-  color: #303133;
-}
-
-.risk-details p {
-  line-height: 1.6;
-  margin-bottom: 20px;
-}
-
-.contributing-factors {
-  margin-top: 20px;
-}
-
-.factor-tag {
-  margin-right: 10px;
-  margin-bottom: 10px;
-}
-
-.health-data-summary {
-  margin-top: 20px;
-  border-top: 1px solid #ebeef5;
-  padding-top: 20px;
-}
-
-.health-data-summary h3 {
-  margin-top: 0;
-  margin-bottom: 15px;
-  font-size: 16px;
-  font-weight: 600;
-  color: #303133;
-}
-
-@media print {
-  .el-button {
-    display: none;
-  }
-}
-
-/* Responsive adjustments */
-@media (max-width: 768px) {
-  .prediction-main {
-    flex-direction: column;
-  }
-  
-  .risk-gauge, .risk-details {
-    flex: 1;
-    width: 100%;
-  }
-  
-  .risk-details {
-    padding-left: 0;
-    margin-top: 20px;
-  }
-}
-</style> 
+@media (max-width: 768px) { .prediction-main { grid-template-columns: 1fr; } }
+</style>
