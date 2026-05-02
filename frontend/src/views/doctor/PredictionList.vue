@@ -4,11 +4,11 @@
       <el-card>
         <template #header>
           <div class="card-header">
-            <span>患者预测记录</span>
+            <span>Patient Prediction Records</span>
             <div class="header-actions">
               <el-input
                 v-model="search"
-                placeholder="搜索患者..."
+                placeholder="Search patients..."
                 style="width: 300px"
                 class="mr-3"
               >
@@ -18,7 +18,7 @@
               </el-input>
               <el-select
                 v-model="selectedDisease"
-                placeholder="疾病类型"
+                placeholder="Disease Type"
                 clearable
                 style="width: 180px"
                 class="mr-3"
@@ -32,7 +32,7 @@
               </el-select>
               <el-select
                 v-model="riskLevel"
-                placeholder="风险等级"
+                placeholder="Risk Level"
                 clearable
                 style="width: 150px"
                 class="mr-3"
@@ -54,14 +54,14 @@
           border
           :default-sort="{ prop: 'date', order: 'descending' }"
         >
-          <el-table-column prop="patientName" label="患者姓名" width="120" sortable></el-table-column>
-          <el-table-column prop="diseaseType" label="疾病类型" width="120"></el-table-column>
-          <el-table-column prop="date" label="预测日期" width="180" sortable>
+          <el-table-column prop="patientName" label="Patient Name" width="120" sortable></el-table-column>
+          <el-table-column prop="diseaseType" label="Disease Type" width="120"></el-table-column>
+          <el-table-column prop="date" label="Prediction Date" width="180" sortable>
             <template #default="scope">
               {{ formatDate(scope.row.date) }}
             </template>
           </el-table-column>
-          <el-table-column prop="riskScore" label="风险评分" width="100" sortable>
+          <el-table-column prop="riskScore" label="Risk Score" width="100" sortable>
             <template #default="scope">
               <el-progress
                 :percentage="scope.row.riskScore"
@@ -70,21 +70,21 @@
               ></el-progress>
             </template>
           </el-table-column>
-          <el-table-column prop="riskLevel" label="风险等级" width="120">
+          <el-table-column prop="riskLevel" label="Risk Level" width="120">
             <template #default="scope">
               <el-tag :type="getRiskTagType(scope.row.riskLevel)">
                 {{ scope.row.riskLevel }}
               </el-tag>
             </template>
           </el-table-column>
-          <el-table-column prop="status" label="状态" width="120">
+          <el-table-column prop="status" label="Status" width="120">
             <template #default="scope">
               <el-tag :type="getStatusTagType(scope.row.status)">
                 {{ scope.row.status }}
               </el-tag>
             </template>
           </el-table-column>
-          <el-table-column label="操作" width="250">
+          <el-table-column label="Actions" width="250">
             <template #default="scope">
               <el-button
                 size="small"
@@ -93,17 +93,17 @@
                 plain
                 class="mr-2"
               >
-                详情
+                Details
               </el-button>
               <el-button
                 size="small"
                 @click="provideFeedback(scope.row)"
                 type="success"
                 plain
-                :disabled="scope.row.status === '已反馈'"
+                :disabled="scope.row.status === 'Completed'"
                 class="mr-2"
               >
-                反馈
+                Feedback
               </el-button>
               <el-button
                 size="small"
@@ -111,7 +111,7 @@
                 type="info"
                 plain
               >
-                联系患者
+                Contact
               </el-button>
             </template>
           </el-table-column>
@@ -130,56 +130,56 @@
         </div>
       </el-card>
       
-      <!-- 详情对话框 -->
+      <!-- Details Dialog -->
       <el-dialog
         v-model="detailsDialog"
-        title="预测详情"
+        title="Prediction Details"
         width="800px"
       >
         <template v-if="selectedPrediction">
           <el-descriptions :column="2" border>
-            <el-descriptions-item label="患者姓名" span="1">{{ selectedPrediction.patientName }}</el-descriptions-item>
-            <el-descriptions-item label="年龄" span="1">{{ selectedPrediction.patientAge }}</el-descriptions-item>
-            <el-descriptions-item label="性别" span="1">{{ selectedPrediction.patientGender }}</el-descriptions-item>
-            <el-descriptions-item label="联系方式" span="1">{{ selectedPrediction.patientContact }}</el-descriptions-item>
-            <el-descriptions-item label="疾病类型" span="1">{{ selectedPrediction.diseaseType }}</el-descriptions-item>
-            <el-descriptions-item label="预测日期" span="1">{{ formatDate(selectedPrediction.date) }}</el-descriptions-item>
-            <el-descriptions-item label="风险评分" span="1">
+            <el-descriptions-item label="Patient Name" span="1">{{ selectedPrediction.patientName }}</el-descriptions-item>
+            <el-descriptions-item label="Age" span="1">{{ selectedPrediction.patientAge }}</el-descriptions-item>
+            <el-descriptions-item label="Gender" span="1">{{ selectedPrediction.patientGender }}</el-descriptions-item>
+            <el-descriptions-item label="Contact Info" span="1">{{ selectedPrediction.patientContact }}</el-descriptions-item>
+            <el-descriptions-item label="Disease Type" span="1">{{ selectedPrediction.diseaseType }}</el-descriptions-item>
+            <el-descriptions-item label="Prediction Date" span="1">{{ formatDate(selectedPrediction.date) }}</el-descriptions-item>
+            <el-descriptions-item label="Risk Score" span="1">
               <el-progress 
                 :percentage="selectedPrediction.riskScore" 
                 :color="getRiskColor(selectedPrediction.riskScore)"
                 :stroke-width="18"
               ></el-progress>
             </el-descriptions-item>
-            <el-descriptions-item label="风险等级" span="1">
+            <el-descriptions-item label="Risk Level" span="1">
               <el-tag :type="getRiskTagType(selectedPrediction.riskLevel)">
                 {{ selectedPrediction.riskLevel }}
               </el-tag>
             </el-descriptions-item>
-            <el-descriptions-item label="状态" span="1">
+            <el-descriptions-item label="Status" span="1">
               <el-tag :type="getStatusTagType(selectedPrediction.status)">
                 {{ selectedPrediction.status }}
               </el-tag>
             </el-descriptions-item>
-            <el-descriptions-item label="关键指标" span="2">
+            <el-descriptions-item label="Key Indicators" span="2">
               <el-table :data="selectedPrediction.indicators" style="width: 100%">
-                <el-table-column prop="name" label="指标名称" width="180"></el-table-column>
-                <el-table-column prop="value" label="指标值" width="120"></el-table-column>
-                <el-table-column prop="normalRange" label="正常范围" width="180"></el-table-column>
-                <el-table-column prop="status" label="状态">
+                <el-table-column prop="name" label="Indicator" width="180"></el-table-column>
+                <el-table-column prop="value" label="Value" width="120"></el-table-column>
+                <el-table-column prop="normalRange" label="Normal Range" width="180"></el-table-column>
+                <el-table-column prop="status" label="Status">
                   <template #default="scope">
-                    <el-tag :type="scope.row.status === '正常' ? 'success' : 'danger'">
+                    <el-tag :type="scope.row.status === 'Normal' ? 'success' : 'danger'">
                       {{ scope.row.status }}
                     </el-tag>
                   </template>
                 </el-table-column>
               </el-table>
             </el-descriptions-item>
-            <el-descriptions-item label="风险因素" span="2">{{ selectedPrediction.riskFactors }}</el-descriptions-item>
-            <el-descriptions-item label="建议" span="2">{{ selectedPrediction.recommendations }}</el-descriptions-item>
+            <el-descriptions-item label="Risk Factors" span="2">{{ selectedPrediction.riskFactors }}</el-descriptions-item>
+            <el-descriptions-item label="Advice" span="2">{{ selectedPrediction.recommendations }}</el-descriptions-item>
             <el-descriptions-item 
               v-if="selectedPrediction.doctorFeedback" 
-              label="医生反馈" 
+              label="Doctor Feedback" 
               span="2"
             >
               {{ selectedPrediction.doctorFeedback }}
@@ -188,45 +188,45 @@
         </template>
       </el-dialog>
       
-      <!-- 反馈对话框 -->
+      <!-- Feedback Dialog -->
       <el-dialog
         v-model="feedbackDialog"
-        title="医生反馈"
+        title="Doctor Feedback"
         width="600px"
       >
         <el-form :model="feedbackForm" ref="feedbackFormRef" :rules="feedbackRules" label-width="120px">
-          <el-form-item label="预测准确性" prop="accuracy">
+          <el-form-item label="Accuracy" prop="accuracy">
             <el-rate
               v-model="feedbackForm.accuracy"
               :colors="rateColors"
               show-score
             ></el-rate>
           </el-form-item>
-          <el-form-item label="医生诊断" prop="diagnosis">
-            <el-input v-model="feedbackForm.diagnosis" type="textarea" :rows="2"></el-input>
+          <el-form-item label="Diagnosis" prop="diagnosis">
+            <el-input v-model="feedbackForm.diagnosis" type="textarea" :rows="2" placeholder="Enter diagnosis..."></el-input>
           </el-form-item>
-          <el-form-item label="治疗方案" prop="treatmentPlan">
-            <el-input v-model="feedbackForm.treatmentPlan" type="textarea" :rows="3"></el-input>
+          <el-form-item label="Treatment Plan" prop="treatmentPlan">
+            <el-input v-model="feedbackForm.treatmentPlan" type="textarea" :rows="3" placeholder="Enter treatment plan..."></el-input>
           </el-form-item>
-          <el-form-item label="生活建议" prop="lifestyleAdvice">
-            <el-input v-model="feedbackForm.lifestyleAdvice" type="textarea" :rows="3"></el-input>
+          <el-form-item label="Lifestyle Advice" prop="lifestyleAdvice">
+            <el-input v-model="feedbackForm.lifestyleAdvice" type="textarea" :rows="3" placeholder="Enter lifestyle advice..."></el-input>
           </el-form-item>
-          <el-form-item label="随访计划" prop="followUpPlan">
+          <el-form-item label="Follow-up" prop="followUpPlan">
             <el-date-picker
               v-model="feedbackForm.followUpDate"
               type="date"
-              placeholder="选择随访日期"
+              placeholder="Select follow-up date"
               style="width: 100%"
             ></el-date-picker>
           </el-form-item>
-          <el-form-item label="额外备注" prop="notes">
-            <el-input v-model="feedbackForm.notes" type="textarea" :rows="2"></el-input>
+          <el-form-item label="Notes" prop="notes">
+            <el-input v-model="feedbackForm.notes" type="textarea" :rows="2" placeholder="Enter additional notes..."></el-input>
           </el-form-item>
         </el-form>
         <template #footer>
           <div class="dialog-footer">
-            <el-button @click="feedbackDialog = false">取消</el-button>
-            <el-button type="primary" @click="submitFeedback">提交反馈</el-button>
+            <el-button @click="feedbackDialog = false">Cancel</el-button>
+            <el-button type="primary" @click="submitFeedback">Submit Feedback</el-button>
           </div>
         </template>
       </el-dialog>
@@ -266,132 +266,132 @@ export default {
     
     const feedbackRules = {
       diagnosis: [
-        { required: true, message: '请输入医生诊断', trigger: 'blur' }
+        { required: true, message: 'Please enter diagnosis', trigger: 'blur' }
       ],
       treatmentPlan: [
-        { required: true, message: '请输入治疗方案', trigger: 'blur' }
+        { required: true, message: 'Please enter treatment plan', trigger: 'blur' }
       ]
     };
     
     const rateColors = ['#F56C6C', '#E6A23C', '#6F7AD3', '#5CB87A', '#1F9F85'];
     
     const diseaseTypes = [
-      '高血压', '糖尿病', '冠心病', '脑卒中', '慢性肾病', '慢性阻塞性肺疾病'
+      'Hypertension', 'Diabetes', 'Coronary Heart Disease', 'Stroke', 'Chronic Kidney Disease', 'COPD'
     ];
     
     const riskLevels = [
-      { value: '低风险', label: '低风险' },
-      { value: '中风险', label: '中风险' },
-      { value: '高风险', label: '高风险' },
-      { value: '极高风险', label: '极高风险' }
+      { value: 'Low Risk', label: 'Low Risk' },
+      { value: 'Medium Risk', label: 'Medium Risk' },
+      { value: 'High Risk', label: 'High Risk' },
+      { value: 'Very High Risk', label: 'Very High Risk' }
     ];
     
-    // 模拟数据
+    // Mock Data
     const predictions = ref([
       {
         id: 1,
         patientId: 'P001',
-        patientName: '张三',
+        patientName: 'John Doe',
         patientAge: 58,
-        patientGender: '男',
+        patientGender: 'Male',
         patientContact: '13800138001',
-        diseaseType: '高血压',
+        diseaseType: 'Hypertension',
         date: '2023-05-10T08:30:00',
         riskScore: 75,
-        riskLevel: '高风险',
-        status: '待处理',
+        riskLevel: 'High Risk',
+        status: 'Pending',
         indicators: [
-          { name: '收缩压', value: '150mmHg', normalRange: '90-120mmHg', status: '异常' },
-          { name: '舒张压', value: '95mmHg', normalRange: '60-80mmHg', status: '异常' },
-          { name: '心率', value: '78次/分', normalRange: '60-100次/分', status: '正常' },
-          { name: 'BMI', value: '28.5', normalRange: '18.5-24.9', status: '异常' }
+          { name: 'Systolic BP', value: '150mmHg', normalRange: '90-120mmHg', status: 'Abnormal' },
+          { name: 'Diastolic BP', value: '95mmHg', normalRange: '60-80mmHg', status: 'Abnormal' },
+          { name: 'Heart Rate', value: '78bpm', normalRange: '60-100bpm', status: 'Normal' },
+          { name: 'BMI', value: '28.5', normalRange: '18.5-24.9', status: 'Abnormal' }
         ],
-        riskFactors: '年龄、家族史、肥胖、高盐饮食、缺乏运动',
-        recommendations: '控制饮食，减少盐的摄入，增加有氧运动，控制体重，定期监测血压'
+        riskFactors: 'Age, Family History, Obesity, High Salt Diet, Lack of Exercise',
+        recommendations: 'Control diet, reduce salt intake, increase aerobic exercise, control weight, regularly monitor blood pressure'
       },
       {
         id: 2,
         patientId: 'P002',
-        patientName: '李四',
+        patientName: 'Jane Smith',
         patientAge: 62,
-        patientGender: '男',
+        patientGender: 'Female',
         patientContact: '13800138002',
-        diseaseType: '糖尿病',
+        diseaseType: 'Diabetes',
         date: '2023-05-09T10:15:00',
         riskScore: 85,
-        riskLevel: '极高风险',
-        status: '已反馈',
+        riskLevel: 'Very High Risk',
+        status: 'Completed',
         indicators: [
-          { name: '空腹血糖', value: '8.2mmol/L', normalRange: '3.9-6.1mmol/L', status: '异常' },
-          { name: 'HbA1c', value: '7.8%', normalRange: '4.0-6.0%', status: '异常' },
-          { name: '尿微量白蛋白', value: '35mg/24h', normalRange: '<30mg/24h', status: '异常' }
+          { name: 'Fasting Glucose', value: '8.2mmol/L', normalRange: '3.9-6.1mmol/L', status: 'Abnormal' },
+          { name: 'HbA1c', value: '7.8%', normalRange: '4.0-6.0%', status: 'Abnormal' },
+          { name: 'Microalbuminuria', value: '35mg/24h', normalRange: '<30mg/24h', status: 'Abnormal' }
         ],
-        riskFactors: '年龄、家族史、肥胖、高碳水饮食、久坐不动',
-        recommendations: '控制饮食，减少碳水化合物和糖的摄入，增加运动，定期监测血糖',
-        doctorFeedback: '患者情况符合2型糖尿病诊断，建议立即开始生活方式干预，并考虑口服降糖药物治疗。'
+        riskFactors: 'Age, Family History, Obesity, High Carb Diet, Sedentary Lifestyle',
+        recommendations: 'Control diet, reduce carbohydrate and sugar intake, increase exercise, regularly monitor blood glucose',
+        doctorFeedback: 'Case consistent with Type 2 Diabetes diagnosis. Advised immediate lifestyle intervention and considering oral hypoglycemic medications.'
       },
       {
         id: 3,
         patientId: 'P003',
-        patientName: '王五',
+        patientName: 'Robert Wilson',
         patientAge: 45,
-        patientGender: '女',
+        patientGender: 'Male',
         patientContact: '13800138003',
-        diseaseType: '高血压',
+        diseaseType: 'Hypertension',
         date: '2023-05-11T14:20:00',
         riskScore: 35,
-        riskLevel: '低风险',
-        status: '待处理',
+        riskLevel: 'Low Risk',
+        status: 'Pending',
         indicators: [
-          { name: '收缩压', value: '125mmHg', normalRange: '90-120mmHg', status: '异常' },
-          { name: '舒张压', value: '82mmHg', normalRange: '60-80mmHg', status: '异常' },
-          { name: '心率', value: '72次/分', normalRange: '60-100次/分', status: '正常' },
-          { name: 'BMI', value: '23.5', normalRange: '18.5-24.9', status: '正常' }
+          { name: 'Systolic BP', value: '125mmHg', normalRange: '90-120mmHg', status: 'Abnormal' },
+          { name: 'Diastolic BP', value: '82mmHg', normalRange: '60-80mmHg', status: 'Abnormal' },
+          { name: 'Heart Rate', value: '72bpm', normalRange: '60-100bpm', status: 'Normal' },
+          { name: 'BMI', value: '23.5', normalRange: '18.5-24.9', status: 'Normal' }
         ],
-        riskFactors: '工作压力大、轻度肥胖',
-        recommendations: '保持健康的生活方式，定期监测血压，减轻工作压力'
+        riskFactors: 'High stress, slight obesity',
+        recommendations: 'Maintain healthy lifestyle, monitor blood pressure, reduce work stress'
       },
       {
         id: 4,
         patientId: 'P004',
-        patientName: '赵六',
+        patientName: 'Emma Brown',
         patientAge: 70,
-        patientGender: '男',
+        patientGender: 'Female',
         patientContact: '13800138004',
-        diseaseType: '冠心病',
+        diseaseType: 'Heart Disease',
         date: '2023-05-08T09:45:00',
         riskScore: 65,
-        riskLevel: '中风险',
-        status: '已反馈',
+        riskLevel: 'Medium Risk',
+        status: 'Completed',
         indicators: [
-          { name: '总胆固醇', value: '5.8mmol/L', normalRange: '<5.2mmol/L', status: '异常' },
-          { name: 'LDL胆固醇', value: '3.5mmol/L', normalRange: '<3.4mmol/L', status: '异常' },
-          { name: 'HDL胆固醇', value: '1.0mmol/L', normalRange: '>1.0mmol/L', status: '正常' },
-          { name: '血压', value: '145/90mmHg', normalRange: '<140/90mmHg', status: '异常' }
+          { name: 'Total Cholesterol', value: '5.8mmol/L', normalRange: '<5.2mmol/L', status: 'Abnormal' },
+          { name: 'LDL-C', value: '3.5mmol/L', normalRange: '<3.4mmol/L', status: 'Abnormal' },
+          { name: 'HDL-C', value: '1.0mmol/L', normalRange: '>1.0mmol/L', status: 'Normal' },
+          { name: 'Blood Pressure', value: '145/90mmHg', normalRange: '<140/90mmHg', status: 'Abnormal' }
         ],
-        riskFactors: '年龄、高血压、高胆固醇、吸烟史',
-        recommendations: '戒烟，低脂饮食，规律运动，控制血压，服用他汀类药物降脂',
-        doctorFeedback: '患者有明显的冠心病风险因素，已开具他汀类药物处方，并建议每周进行3次有氧运动，每次30分钟。'
+        riskFactors: 'Age, Hypertension, High Cholesterol, Smoking History',
+        recommendations: 'Quit smoking, low-fat diet, regular exercise, control BP, statin therapy',
+        doctorFeedback: 'Significant risk factors for CHD. Prescribed statins and advised aerobic exercise 3x/week.'
       },
       {
         id: 5,
         patientId: 'P005',
-        patientName: '孙七',
+        patientName: 'William Jones',
         patientAge: 55,
-        patientGender: '女',
+        patientGender: 'Male',
         patientContact: '13800138005',
-        diseaseType: '慢性阻塞性肺疾病',
+        diseaseType: 'COPD',
         date: '2023-05-07T15:30:00',
         riskScore: 55,
-        riskLevel: '中风险',
-        status: '待处理',
+        riskLevel: 'Medium Risk',
+        status: 'Pending',
         indicators: [
-          { name: 'FEV1', value: '65%预计值', normalRange: '>80%预计值', status: '异常' },
-          { name: 'FEV1/FVC', value: '0.65', normalRange: '>0.7', status: '异常' },
-          { name: '血氧饱和度', value: '94%', normalRange: '95-100%', status: '异常' }
+          { name: 'FEV1', value: '65% Predicted', normalRange: '>80% Predicted', status: 'Abnormal' },
+          { name: 'FEV1/FVC', value: '0.65', normalRange: '>0.7', status: 'Abnormal' },
+          { name: 'SpO2', value: '94%', normalRange: '95-100%', status: 'Abnormal' }
         ],
-        riskFactors: '长期吸烟、职业暴露、反复呼吸道感染',
-        recommendations: '立即戒烟，避免空气污染，接种流感和肺炎疫苗，考虑支气管扩张剂治疗'
+        riskFactors: 'Long-term smoking, occupational exposure, recurrent infections',
+        recommendations: 'Immediate smoking cessation, avoid pollution, vaccinations, consider bronchodilators'
       }
     ]);
     
@@ -437,18 +437,18 @@ export default {
     
     const getRiskTagType = (level) => {
       switch (level) {
-        case '低风险': return 'success';
-        case '中风险': return 'warning';
-        case '高风险': return 'danger';
-        case '极高风险': return 'danger';
+        case 'Low Risk': return 'success';
+        case 'Medium Risk': return 'warning';
+        case 'High Risk': return 'danger';
+        case 'Very High Risk': return 'danger';
         default: return '';
       }
     };
     
     const getStatusTagType = (status) => {
       switch (status) {
-        case '待处理': return 'info';
-        case '已反馈': return 'success';
+        case 'Pending': return 'info';
+        case 'Completed': return 'success';
         default: return '';
       }
     };
@@ -460,13 +460,13 @@ export default {
     
     const provideFeedback = (prediction) => {
       selectedPrediction.value = prediction;
-      // 重置表单
+      // Reset form
       Object.assign(feedbackForm, {
         accuracy: 3,
         diagnosis: '',
         treatmentPlan: '',
         lifestyleAdvice: '',
-        followUpDate: new Date(new Date().setDate(new Date().getDate() + 30)), // 默认30天后随访
+        followUpDate: new Date(new Date().setDate(new Date().getDate() + 30)), // Default 30 days
         notes: ''
       });
       feedbackDialog.value = true;
@@ -475,15 +475,12 @@ export default {
     const submitFeedback = () => {
       feedbackFormRef.value.validate((valid) => {
         if (valid) {
-          // 在实际应用中，这里应该调用API提交反馈
           const index = predictions.value.findIndex(p => p.id === selectedPrediction.value.id);
           if (index !== -1) {
-            // 更新状态
-            predictions.value[index].status = '已反馈';
-            // 保存反馈内容
-            predictions.value[index].doctorFeedback = `诊断: ${feedbackForm.diagnosis}\n治疗方案: ${feedbackForm.treatmentPlan}\n生活建议: ${feedbackForm.lifestyleAdvice}\n随访日期: ${feedbackForm.followUpDate ? formatDate(feedbackForm.followUpDate) : '未设置'}\n备注: ${feedbackForm.notes}`;
+            predictions.value[index].status = 'Completed';
+            predictions.value[index].doctorFeedback = `Diagnosis: ${feedbackForm.diagnosis}\nTreatment: ${feedbackForm.treatmentPlan}\nAdvice: ${feedbackForm.lifestyleAdvice}\nFollow-up: ${feedbackForm.followUpDate ? formatDate(feedbackForm.followUpDate) : 'Not set'}\nNotes: ${feedbackForm.notes}`;
             
-            ElMessage.success('反馈提交成功');
+            ElMessage.success('Feedback submitted successfully');
             feedbackDialog.value = false;
           }
         }
@@ -492,15 +489,15 @@ export default {
     
     const contactPatient = (prediction) => {
       ElMessageBox.confirm(
-        `是否联系患者 ${prediction.patientName}？联系电话: ${prediction.patientContact}`,
-        '联系患者',
+        `Do you want to contact patient ${prediction.patientName}? Phone: ${prediction.patientContact}`,
+        'Contact Patient',
         {
-          confirmButtonText: '确认',
-          cancelButtonText: '取消',
+          confirmButtonText: 'Confirm',
+          cancelButtonText: 'Cancel',
           type: 'info'
         }
       ).then(() => {
-        ElMessage.success(`已发起与患者 ${prediction.patientName} 的通话`);
+        ElMessage.success(`Initiating call with ${prediction.patientName}...`);
       }).catch(() => {});
     };
     

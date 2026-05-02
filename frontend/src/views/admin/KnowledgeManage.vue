@@ -1,13 +1,13 @@
 <template>
   <el-card class="knowledge-manage-card">
-    <!-- 顶部工具栏 -->
+    <!-- Top Toolbar -->
     <div class="toolbar">
       <el-button type="primary" icon="Plus" @click="openDialog(activeTab)">
-        新建{{ currentTabLabel }}
+        New {{ currentTabLabel }}
       </el-button>
     </div>
 
-    <!-- 分类页签 -->
+    <!-- Category Tabs -->
     <el-tabs v-model="activeTab" type="border-card" class="custom-tabs">
       <el-tab-pane
         v-for="tab in tabs"
@@ -18,12 +18,12 @@
         <el-table
           :data="dataList[tab.key]"
           v-loading="loading[tab.key]"
-          :empty-text="`暂无${tab.label}`"
+          :empty-text="`No ${tab.label} available`"
           row-key="id"
           stripe
           border
         >
-          <!-- 动态列 -->
+          <!-- Dynamic Columns -->
           <el-table-column
             v-for="col in columnsMap[tab.key]"
             :key="col.prop"
@@ -32,17 +32,17 @@
             :width="col.width"
             :show-overflow-tooltip="!col.noEllipsis"
           />
-          <el-table-column label="操作" width="200" fixed="right">
+          <el-table-column label="Actions" width="200" fixed="right">
             <template #default="{ row }">
-              <el-button link type="primary" size="small" @click="openDialog(tab.key, row)">编辑</el-button>
-              <el-button link type="danger" size="small" @click="handleDelete(tab.key, row)">删除</el-button>
+              <el-button link type="primary" size="small" @click="openDialog(tab.key, row)">Edit</el-button>
+              <el-button link type="danger" size="small" @click="handleDelete(tab.key, row)">Delete</el-button>
             </template>
           </el-table-column>
         </el-table>
       </el-tab-pane>
     </el-tabs>
 
-    <!-- 弹窗 -->
+    <!-- Dialog -->
     <el-dialog
       v-model="dialogVisible"
       :title="dialogTitle"
@@ -55,7 +55,7 @@
         ref="formRef"
         :model="formData"
         :rules="formRules"
-        label-width="110px"
+        label-width="130px"
         class="edit-form"
       >
         <el-row :gutter="20">
@@ -73,8 +73,8 @@
       </el-form>
 
       <template #footer>
-        <el-button @click="dialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="submitForm">保存</el-button>
+        <el-button @click="dialogVisible = false">Cancel</el-button>
+        <el-button type="primary" @click="submitForm">Save</el-button>
       </template>
     </el-dialog>
   </el-card>
@@ -90,48 +90,48 @@ import {
   listHabit, createHabit, updateHabit, deleteHabit
 } from '../../api/Knowledge'
 
-/* ---------- 1. 选项卡配置 ---------- */
+/* ---------- 1. Tab Configuration ---------- */
 const tabs = [
-  { key: 'chronic', label: '糖尿病知识' },
-  { key: 'nutrition', label: '健康生活指南' },
-  { key: 'research', label: '最新研究资讯' },
-  { key: 'habits', label: '健康爱好' }
+  { key: 'chronic', label: 'Diabetes Knowledge' },
+  { key: 'nutrition', label: 'Health Guide' },
+  { key: 'research', label: 'Latest Research' },
+  { key: 'habits', label: 'Health Habits' }
 ]
 const activeTab = ref('chronic')
 const currentTabLabel = computed(() => tabs.find(t => t.key === activeTab.value)?.label)
 
-/* ---------- 2. 表格列配置 ---------- */
+/* ---------- 2. Table Column Configuration ---------- */
 const columnsMap = {
   chronic: [
-    { prop: 'name', label: '名称', width: 160 },
-    { prop: 'description', label: '描述' },
-    { prop: 'symptoms', label: '症状', noEllipsis: true },
-    { prop: 'causes', label: '病因', noEllipsis: true },
-    { prop: 'prevention', label: '预防措施', noEllipsis: true },
-    { prop: 'treatment', label: '治疗方式', noEllipsis: true },
-    { prop: 'order', label: '排序', width: 80 }
+    { prop: 'name', label: 'Name', width: 160 },
+    { prop: 'description', label: 'Description' },
+    { prop: 'symptoms', label: 'Symptoms', noEllipsis: true },
+    { prop: 'causes', label: 'Causes', noEllipsis: true },
+    { prop: 'prevention', label: 'Prevention', noEllipsis: true },
+    { prop: 'treatment', label: 'Treatment', noEllipsis: true },
+    { prop: 'order', label: 'Order', width: 80 }
   ],
   nutrition: [
-    { prop: 'title', label: '标题', width: 200 },
-    { prop: 'category', label: '分类', width: 120 },
-    { prop: 'content', label: '内容' },
-    { prop: 'order', label: '排序', width: 80 }
+    { prop: 'title', label: 'Title', width: 200 },
+    { prop: 'category', label: 'Category', width: 120 },
+    { prop: 'content', label: 'Content' },
+    { prop: 'order', label: 'Order', width: 80 }
   ],
   research: [
-    { prop: 'title', label: '标题', width: 220 },
-    { prop: 'source', label: '来源', width: 120 },
-    { prop: 'publishDate', label: '发布日期', width: 140 },
-    { prop: 'content', label: '内容', noEllipsis: true }
+    { prop: 'title', label: 'Title', width: 220 },
+    { prop: 'source', label: 'Source', width: 120 },
+    { prop: 'publishDate', label: 'Publish Date', width: 140 },
+    { prop: 'content', label: 'Content', noEllipsis: true }
   ],
   habits: [
-    { prop: 'title', label: '标题', width: 200 },
-    { prop: 'category', label: '分类', width: 200 },
-    { prop: 'content', label: '提示内容' },
-    { prop: 'order', label: '排序', width: 80 }
+    { prop: 'title', label: 'Title', width: 200 },
+    { prop: 'category', label: 'Category', width: 200 },
+    { prop: 'content', label: 'Tips Content' },
+    { prop: 'order', label: 'Order', width: 80 }
   ]
 }
 
-/* ---------- 3. 数据与加载 ---------- */
+/* ---------- 3. Data & Loading ---------- */
 const dataList = reactive({ chronic: [], nutrition: [], research: [], habits: [] })
 const loading = reactive({ chronic: false, nutrition: false, research: false, habits: false })
 async function loadList(key) {
@@ -140,58 +140,58 @@ async function loadList(key) {
     const api = { chronic: listChronic, nutrition: listNutrition, research: listResearch, habits: listHabit }[key]
     dataList[key] = await api()
   } catch (e) {
-    ElMessage.error('加载失败')
+    ElMessage.error('Failed to load')
   } finally { loading[key] = false }
 }
 onMounted(() => loadList(activeTab.value))
 watch(activeTab, (tab) => loadList(tab))
 
-/* ---------- 4. 表单字段配置 ---------- */
+/* ---------- 4. Form Field Configuration ---------- */
 const formData = reactive({})
 const dialogVisible = ref(false)
 const dialogMode = ref('create')
-const dialogTitle = computed(() => `${dialogMode.value === 'create' ? '新建' : '编辑'} ${currentTabLabel.value}`)
+const dialogTitle = computed(() => `${dialogMode.value === 'create' ? 'New' : 'Edit'} ${currentTabLabel.value}`)
 const formRef = ref()
 
 const genField = (prop, label, component = 'el-input', attrs = {}) => ({ prop, label, component, attrs })
 const fieldConfigs = {
   chronic: [
-    genField('name', '名称'),
-    genField('description', '描述', 'el-input', { type: 'textarea', autosize: { minRows: 3, maxRows: 6 } }),
-    genField('symptoms', '症状', 'el-input', { type: 'textarea', autosize: { minRows: 2, maxRows: 4 } }),
-    genField('causes', '病因', 'el-input', { type: 'textarea', autosize: { minRows: 2, maxRows: 4 } }),
-    genField('prevention', '预防措施', 'el-input', { type: 'textarea', autosize: { minRows: 2, maxRows: 4 } }),
-    genField('treatment', '治疗方式', 'el-input', { type: 'textarea', autosize: { minRows: 2, maxRows: 4 } }),
-    genField('order', '排序', 'el-input-number', { min: 1 })
+    genField('name', 'Name'),
+    genField('description', 'Description', 'el-input', { type: 'textarea', autosize: { minRows: 3, maxRows: 6 } }),
+    genField('symptoms', 'Symptoms', 'el-input', { type: 'textarea', autosize: { minRows: 2, maxRows: 4 } }),
+    genField('causes', 'Causes', 'el-input', { type: 'textarea', autosize: { minRows: 2, maxRows: 4 } }),
+    genField('prevention', 'Prevention', 'el-input', { type: 'textarea', autosize: { minRows: 2, maxRows: 4 } }),
+    genField('treatment', 'Treatment', 'el-input', { type: 'textarea', autosize: { minRows: 2, maxRows: 4 } }),
+    genField('order', 'Order', 'el-input-number', { min: 1 })
   ],
   nutrition: [
-    genField('title', '标题'),
-    genField('content', '内容', 'el-input', { type: 'textarea', autosize: { minRows: 4, maxRows: 8 } }),
-    genField('category', '分类'),
-    genField('order', '排序', 'el-input-number', { min: 1 })
+    genField('title', 'Title'),
+    genField('content', 'Content', 'el-input', { type: 'textarea', autosize: { minRows: 4, maxRows: 8 } }),
+    genField('category', 'Category'),
+    genField('order', 'Order', 'el-input-number', { min: 1 })
   ],
   research: [
-    genField('title', '标题'),
-    genField('content', '内容', 'el-input', { type: 'textarea', autosize: { minRows: 4, maxRows: 8 } }),
-    genField('source', '来源'),
-    genField('publishDate', '发布日期', 'el-date-picker', { type: 'date', 'value-format': 'YYYY-MM-DD' }),
-    genField('order', '排序', 'el-input-number', { min: 1 })
+    genField('title', 'Title'),
+    genField('content', 'Content', 'el-input', { type: 'textarea', autosize: { minRows: 4, maxRows: 8 } }),
+    genField('source', 'Source'),
+    genField('publishDate', 'Publish Date', 'el-date-picker', { type: 'date', 'value-format': 'YYYY-MM-DD' }),
+    genField('order', 'Order', 'el-input-number', { min: 1 })
   ],
   habits: [
-    genField('title', '标题'),
-    genField('category', '分类'),
-    genField('content', '提示内容', 'el-input', { type: 'textarea', autosize: { minRows: 3, maxRows: 6 } }),
-    genField('order', '排序', 'el-input-number', { min: 1 })
+    genField('title', 'Title'),
+    genField('category', 'Category'),
+    genField('content', 'Tips Content', 'el-input', { type: 'textarea', autosize: { minRows: 3, maxRows: 6 } }),
+    genField('order', 'Order', 'el-input-number', { min: 1 })
   ]
 }
 const currentFields = computed(() => fieldConfigs[activeTab.value])
 
 const formRules = {
-  name: [{ required: true, message: '名称不能为空', trigger: 'blur' }],
-  description: [{ required: true, message: '描述不能为空', trigger: 'blur' }]
+  name: [{ required: true, message: 'Name cannot be empty', trigger: 'blur' }],
+  description: [{ required: true, message: 'Description cannot be empty', trigger: 'blur' }]
 }
 
-/* ---------- 5. 打开 / 提交表单 ---------- */
+/* ---------- 5. Open / Submit Form ---------- */
 function openDialog(key, row) {
   activeTab.value = key
   dialogMode.value = row ? 'edit' : 'create'
@@ -210,24 +210,33 @@ async function submitForm() {
     } else {
       await { chronic: updateChronic, nutrition: updateNutrition, research: updateResearch, habits: updateHabit }[activeTab.value](formData.id, formData)
     }
-    ElMessage.success('保存成功')
+    ElMessage.success('Saved successfully')
     dialogVisible.value = false
     await loadList(activeTab.value)
   } catch (_) {
-    ElMessage.error('保存失败')
+    ElMessage.error('Failed to save')
   }
 }
 
-/* ---------- 6. 删除 ---------- */
+/* ---------- 6. Delete ---------- */
 async function handleDelete(key, row) {
   try {
-    await ElMessageBox.confirm('确认删除该条目？', '提示', { type: 'warning' })
+    await ElMessageBox.confirm('Are you sure you want to delete this item?', 'Notice', { type: 'warning' })
     await { chronic: deleteChronic, nutrition: deleteNutrition, research: deleteResearch, habits: deleteHabit }[key](row.id)
-    ElMessage.success('删除成功')
+    ElMessage.success('Deleted successfully')
     loadList(key)
   } catch (_) {}
 }
 </script>
+
+<style scoped>
+.knowledge-manage-card { background: #fff; padding: 20px; border-radius: 8px; }
+.toolbar { margin-bottom: 16px; }
+.custom-tabs ::v-deep .el-tabs__header { background: #f9f9f9; border-radius: 4px; }
+.edit-dialog ::v-deep .el-dialog__body { max-height: 60vh; overflow-y: auto; padding: 16px; }
+.edit-form { margin-top: 8px; }
+</style>
+
 
 <style scoped>
 .knowledge-manage-card { background: #fff; padding: 20px; border-radius: 8px; }

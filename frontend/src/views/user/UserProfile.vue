@@ -8,8 +8,8 @@
       </template>
       
       <div class="profile-content">
-        <!-- 医生表单 -->
-        <el-form v-if="isDoctor" :model="profileForm" label-width="100px">
+        <!-- Doctor Form -->
+        <el-form v-if="isDoctor" :model="profileForm" label-width="130px">
           <el-form-item label="Username">
             <el-input v-model="profileForm.username" disabled />
           </el-form-item>
@@ -59,8 +59,8 @@
           </el-form-item>
         </el-form>
 
-        <!-- 普通用户表单 -->
-        <el-form v-else :model="profileForm" label-width="100px">
+        <!-- User Form -->
+        <el-form v-else :model="profileForm" label-width="130px">
           <el-form-item label="Username">
             <el-input v-model="profileForm.username" disabled />
           </el-form-item>
@@ -105,10 +105,10 @@ const profileForm = ref({
   title: ''
 });
 
-// 加载个人信息
+// Load profile information
 const loadProfile = async () => {
   try {
-    // 获取用户信息
+    // Get user info from localStorage
     const userStr = localStorage.getItem('user');
     const userRole = localStorage.getItem('userRole');
     if (userStr) {
@@ -116,7 +116,7 @@ const loadProfile = async () => {
       isDoctor.value = userRole === 'ROLE_DOCTOR';
       
       if (isDoctor.value) {
-        // 医生加载医生信息
+        // Doctor loads doctor info
         const response = await doctorService.getDoctorInfo();
         if (response) {
           const doctorInfo = response;
@@ -131,9 +131,9 @@ const loadProfile = async () => {
           };
         }
       } else {
-        // 普通用户加载用户信息
+        // User loads user info
         const response = await userService.getUserInfo();
-        console.log('User info response:', response); // 添加日志
+        console.log('User info response:', response); 
         if (response) {
           const userInfo = response;
           profileForm.value = {
@@ -143,7 +143,7 @@ const loadProfile = async () => {
             phone: userInfo.phone || '',
             email: userInfo.email || ''
           };
-          console.log('Updated profile form:', profileForm.value); // 添加日志
+          console.log('Updated profile form:', profileForm.value); 
         }
       }
     } else {
@@ -155,11 +155,11 @@ const loadProfile = async () => {
   }
 };
 
-// 保存个人信息
+// Save profile information
 const handleSave = async () => {
   try {
     if (isDoctor.value) {
-      // 更新医生信息
+      // Update doctor info
       const doctorData = {
         name: profileForm.value.name,
         
@@ -171,7 +171,7 @@ const handleSave = async () => {
       await doctorService.updateProfile(doctorData);
       ElMessage.success('Doctor profile updated successfully');
     } else {
-      // 更新用户信息
+      // Update user info
       const userData = {
         name: profileForm.value.name,
         

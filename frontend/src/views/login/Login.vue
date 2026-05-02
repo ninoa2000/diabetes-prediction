@@ -55,7 +55,7 @@ import { useRouter } from 'vue-router';
 import { ElMessage } from 'element-plus';
 import { useUserStore } from '@/store/user';
 
-// 导入角色常量
+// Import role constants
 import { ROLE_ADMIN, ROLE_DOCTOR, ROLE_USER } from '@/constants/roles';
 
 const router = useRouter();
@@ -84,7 +84,7 @@ const loginRules = reactive({
 // Handle login form submission
 const handleLogin = async () => {
   try {
-    // 先进行表单验证
+    // Perform form validation first
     await loginFormRef.value.validate();
     
     loading.value = true;

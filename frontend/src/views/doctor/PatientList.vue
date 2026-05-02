@@ -3,7 +3,7 @@
     <el-card class="patient-card">
       <template #header>
         <div class="card-header">
-          <h2>我的患者</h2>
+          <h2>My Patients</h2>
         </div>
       </template>
       
@@ -13,25 +13,25 @@
       
       <template v-else>
         <div v-if="patients.length === 0" class="empty-patients">
-          <el-empty description="暂无患者" :image-size="200">
+          <el-empty description="No patients yet" :image-size="200">
             <template #description>
-              <p>当患者绑定您后，将会显示在这里</p>
+              <p>When patients bind to you, they will appear here.</p>
             </template>
           </el-empty>
         </div>
         
         <div v-else class="patients-list">
           <el-table :data="patients" style="width: 100%">
-            <el-table-column prop="name" label="患者姓名" />
+            <el-table-column prop="name" label="Patient Name" />
            
-            <el-table-column prop="phone" label="联系电话" />
-            <el-table-column label="操作" width="250">
+            <el-table-column prop="phone" label="Phone Number" />
+            <el-table-column label="Actions" width="250">
               <template #default="{ row }">
                 <el-button type="primary" link @click="viewPatientDetail(row)">
-                  查看详情
+                  View Details
                 </el-button>
                 <el-button type="success" link @click="viewPatientCases(row)">
-                  查看病例
+                  View Records
                 </el-button>
               </template>
             </el-table-column>
@@ -40,18 +40,18 @@
       </template>
     </el-card>
 
-    <!-- 患者详情弹窗 -->
+    <!-- Patient Details Dialog -->
     <el-dialog
       v-model="detailDialogVisible"
-      title="患者详情"
+      title="Patient Details"
       width="500px"
     >
       <div v-if="selectedPatient" class="patient-detail">
         <el-descriptions :column="1" border>
-          <el-descriptions-item label="姓名">{{ selectedPatient.name }}</el-descriptions-item>
+          <el-descriptions-item label="Name">{{ selectedPatient.name }}</el-descriptions-item>
           
-          <el-descriptions-item label="联系电话">{{ selectedPatient.phone }}</el-descriptions-item>
-          <el-descriptions-item label="邮箱">{{ selectedPatient.email }}</el-descriptions-item>
+          <el-descriptions-item label="Phone Number">{{ selectedPatient.phone }}</el-descriptions-item>
+          <el-descriptions-item label="Email">{{ selectedPatient.email }}</el-descriptions-item>
         </el-descriptions>
       </div>
     </el-dialog>
@@ -90,11 +90,11 @@ const loadPatients = async () => {
       patients.value = response;
     } else {
       patients.value = [];
-      ElMessage.warning('暂无患者数据');
+      ElMessage.warning('No patient data available');
     }
   } catch (error) {
-    console.error('加载患者列表失败:', error);
-    ElMessage.error(error.response?.data?.message || '加载患者列表失败');
+    console.error('Failed to load patient list:', error);
+    ElMessage.error(error.response?.data?.message || 'Failed to load patient list');
   } finally {
     loading.value = false;
   }

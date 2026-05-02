@@ -2,10 +2,10 @@
   <div class="not-found-container text-center">
     <div class="error-content">
       <div class="error-code">404</div>
-      <div class="error-title">页面未找到</div>
-      <p class="error-desc">您访问的页面不存在或已被移除</p>
+      <div class="error-title">Page Not Found</div>
+      <p class="error-desc">The page you are looking for does not exist or has been moved.</p>
       <el-button type="primary" @click="$router.push('/')">
-        返回首页
+        Back to Home
       </el-button>
     </div>
     <div class="error-image">

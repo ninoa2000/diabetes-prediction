@@ -136,7 +136,7 @@
 import { ref, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useUserStore } from '@/store/user';
-// 导入 Element Plus 图标
+// Import Element Plus Icons
 import { 
   House, 
   DataAnalysis, 
@@ -152,16 +152,16 @@ const route = useRoute();
 const router = useRouter();
 const userStore = useUserStore();
 
-// 当前年份
+// Current year
 const currentYear = new Date().getFullYear();
 
-// 默认头像
+// Default avatar
 const avatarUrl = ref('https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png');
 
-// 侧边栏激活项
+// Sidebar active item
 const activeMenu = computed(() => route.path);
 
-// 首次交互初始化 AudioContext（可选）
+// Initialize AudioContext on first interaction (optional)
 const hasInteracted = ref(false);
 const handleFirstInteraction = () => {
   if (!hasInteracted.value) {
@@ -173,7 +173,7 @@ const handleFirstInteraction = () => {
   }
 };
 
-// 处理下拉命令
+// Handle dropdown commands
 const handleCommand = (command) => {
   if (command === 'profile') {
     router.push('/profile');

@@ -4,11 +4,11 @@
       <el-card>
         <template #header>
           <div class="card-header">
-            <span>用户管理</span>
+            <span>User Management</span>
             <div class="search-box">
               <el-input
                 v-model="search"
-                placeholder="搜索用户..."
+                placeholder="Search users..."
                 style="width: 300px"
                 class="mr-3"
               >
@@ -17,7 +17,7 @@
                 </template>
               </el-input>
               <el-button type="primary" @click="openAddDialog">
-                <el-icon class="mr-1"><Plus /></el-icon>添加用户
+                <el-icon class="mr-1"><Plus /></el-icon>Add User
               </el-button>
             </div>
           </div>
@@ -29,17 +29,17 @@
           style="width: 100%"
           v-loading="loading"
         >
-          <el-table-column prop="username" label="用户名" min-width="25%"></el-table-column>
-          <el-table-column prop="fullName" label="姓名" min-width="25%"></el-table-column>
-          <el-table-column prop="phone" label="电话" min-width="25%"></el-table-column>
-          <el-table-column prop="active" label="状态" width="120">
+          <el-table-column prop="username" label="Username" min-width="150" show-overflow-tooltip></el-table-column>
+          <el-table-column prop="fullName" label="Name" min-width="150" show-overflow-tooltip></el-table-column>
+          <el-table-column prop="phone" label="Phone" min-width="150" show-overflow-tooltip></el-table-column>
+          <el-table-column prop="active" label="Status" width="120">
             <template #default="scope">
               <el-tag :type="scope.row.active ? 'success' : 'danger'">
-                {{ scope.row.active ? '正常' : '禁用' }}
+                {{ scope.row.active ? 'Active' : 'Disabled' }}
               </el-tag>
             </template>
           </el-table-column>
-          <el-table-column label="操作" fixed="right" width="220">
+          <el-table-column label="Actions" fixed="right" width="220">
             <template #default="scope">
               <el-button
                 size="small"
@@ -47,14 +47,14 @@
                 @click="toggleUserStatus(scope.row)"
                 class="mr-2"
               >
-                {{ scope.row.active ? '禁用' : '启用' }}
+                {{ scope.row.active ? 'Disable' : 'Enable' }}
               </el-button>
               <el-button
                 size="small"
                 type="danger"
                 @click="confirmDelete(scope.row)"
               >
-                删除
+                Delete
               </el-button>
             </template>
           </el-table-column>
@@ -67,9 +67,9 @@
             :page-sizes="[10, 20, 50, 100]"
             :total="filteredUsers.length"
             layout="total, sizes, prev, pager, next, jumper"
-            prev-text="上一页"
-             next-text="下一页"
-            page-size-suffix="条/页"
+            prev-text="Previous"
+             next-text="Next"
+            page-size-suffix="records/page"
             background
             @size-change="handleSizeChange"
             @current-change="handleCurrentChange"
@@ -77,60 +77,60 @@
         </div>
       </el-card>
       
-      <!-- 添加/编辑用户对话框 -->
+      <!-- Add/Edit User Dialog -->
       <el-dialog
         v-model="userDialog"
-        :title="isEditing ? '编辑用户' : '添加用户'"
+        :title="isEditing ? 'Edit User' : 'Add User'"
         width="600px"
       >
         <el-form
           ref="userFormRef"
           :model="userForm"
           :rules="userRules"
-          label-width="100px"
+          label-width="120px"
         >
-          <el-form-item label="用户名" prop="username">
+          <el-form-item label="Username" prop="username">
             <el-input v-model="userForm.username"></el-input>
           </el-form-item>
-          <el-form-item label="姓名" prop="fullName">
+          <el-form-item label="Name" prop="fullName">
             <el-input v-model="userForm.fullName"></el-input>
           </el-form-item>
-          <el-form-item label="电话" prop="phone">
+          <el-form-item label="Phone" prop="phone">
             <el-input v-model="userForm.phone"></el-input>
           </el-form-item>
-          <el-form-item label="密码" prop="password">
+          <el-form-item label="Password" prop="password">
             <el-input v-model="userForm.password" type="password" show-password></el-input>
           </el-form-item>
-          <el-form-item label="确认密码" prop="confirmPassword">
+          <el-form-item label="Confirm Password" prop="confirmPassword">
             <el-input v-model="userForm.confirmPassword" type="password" show-password></el-input>
           </el-form-item>
-          <el-form-item label="状态" prop="active">
+          <el-form-item label="Status" prop="active">
             <el-switch
               v-model="userForm.active"
-              active-text="正常"
-              inactive-text="禁用"
+              active-text="Active"
+              inactive-text="Disabled"
             ></el-switch>
           </el-form-item>
         </el-form>
         <template #footer>
           <div class="dialog-footer">
-            <el-button @click="userDialog = false">取消</el-button>
-            <el-button type="primary" @click="saveUser">保存</el-button>
+            <el-button @click="userDialog = false">Cancel</el-button>
+            <el-button type="primary" @click="saveUser">Save</el-button>
           </div>
         </template>
       </el-dialog>
       
-      <!-- 删除确认对话框 -->
+      <!-- Delete Confirmation Dialog -->
       <el-dialog
         v-model="deleteDialog"
-        title="删除用户"
+        title="Delete User"
         width="400px"
       >
-        <p>确定要删除用户 "{{ selectedUser ? selectedUser.username : '' }}" 吗？此操作不可恢复。</p>
+        <p>Are you sure you want to delete user "{{ selectedUser ? selectedUser.username : '' }}"? This action cannot be undone.</p>
         <template #footer>
           <div class="dialog-footer">
-            <el-button @click="deleteDialog = false">取消</el-button>
-            <el-button type="danger" @click="deleteUser">删除</el-button>
+            <el-button @click="deleteDialog = false">Cancel</el-button>
+            <el-button type="danger" @click="deleteUser">Delete</el-button>
           </div>
         </template>
       </el-dialog>
@@ -173,26 +173,26 @@ export default {
     
     const userRules = {
       username: [
-        { required: true, message: '请输入用户名', trigger: 'blur' },
-        { min: 3, max: 20, message: '长度在 3 到 20 个字符', trigger: 'blur' }
+        { required: true, message: 'Please enter username', trigger: 'blur' },
+        { min: 3, max: 20, message: 'Length should be 3 to 20 characters', trigger: 'blur' }
       ],
       fullName: [
-        { required: true, message: '请输入姓名', trigger: 'blur' }
+        { required: true, message: 'Please enter name', trigger: 'blur' }
       ],
       phone: [
-        { required: true, message: '请输入电话号码', trigger: 'blur' },
-        { pattern: /^1[3-9]\d{9}$/, message: '请输入正确的手机号码', trigger: 'blur' }
+        { required: true, message: 'Please enter phone number', trigger: 'blur' },
+        { pattern: /^1[3-9]\d{9}$/, message: 'Please enter a valid phone number', trigger: 'blur' }
       ],
       password: [
-        { required: true, message: '请输入密码', trigger: 'blur' },
-        { min: 6, message: '密码长度不能小于6个字符', trigger: 'blur' }
+        { required: true, message: 'Please enter password', trigger: 'blur' },
+        { min: 6, message: 'Password must be at least 6 characters', trigger: 'blur' }
       ],
       confirmPassword: [
-        { required: true, message: '请再次输入密码', trigger: 'blur' },
+        { required: true, message: 'Please confirm your password', trigger: 'blur' },
         {
           validator: (rule, value, callback) => {
             if (value !== userForm.password) {
-              callback(new Error('两次输入密码不一致'));
+              callback(new Error('Passwords do not match'));
             } else {
               callback();
             }
@@ -224,15 +224,15 @@ export default {
       return filteredUsers.value.slice(start, end);
     });
     
-    // 获取所有普通用户
+    // Get all regular users
     const fetchUsers = async () => {
       try {
         loading.value = true;
         const response = await adminService.getAllUsers();
         users.value = response.data;
       } catch (error) {
-        ElMessage.error(error.response?.data?.message || '获取用户列表失败');
-        console.error('获取用户列表错误:', error);
+        ElMessage.error(error.response?.data?.message || 'Failed to fetch user list');
+        console.error('Fetch users error:', error);
       } finally {
         loading.value = false;
       }
@@ -271,12 +271,12 @@ export default {
             };
             
             await adminService.createUser(userData);
-            ElMessage.success('用户创建成功');
+            ElMessage.success('User created successfully');
             userDialog.value = false;
-            fetchUsers(); // 重新加载用户列表
+            fetchUsers(); // Reload user list
           } catch (error) {
-            ElMessage.error(error.response?.data?.message || '创建用户失败');
-            console.error('创建用户错误:', error);
+            ElMessage.error(error.response?.data?.message || 'Failed to create user');
+            console.error('Create user error:', error);
           }
         }
       });
@@ -290,32 +290,32 @@ export default {
     const deleteUser = async () => {
       try {
         await adminService.deleteUser(selectedUser.value.id);
-        ElMessage.success('用户删除成功');
+        ElMessage.success('User deleted successfully');
         deleteDialog.value = false;
-        fetchUsers(); // 重新加载用户列表
+        fetchUsers(); // Reload user list
       } catch (error) {
-        ElMessage.error(error.response?.data?.message || '删除用户失败');
-        console.error('删除用户错误:', error);
+        ElMessage.error(error.response?.data?.message || 'Failed to delete user');
+        console.error('Delete user error:', error);
       }
     };
     
     const toggleUserStatus = (user) => {
       ElMessageBox.confirm(
-        `确定要${user.active ? '禁用' : '启用'}用户 "${user.username}" 吗？`,
-        user.active ? '禁用用户' : '启用用户',
+        `Are you sure you want to ${user.active ? 'disable' : 'enable'} user "${user.username}"?`,
+        user.active ? 'Disable User' : 'Enable User',
         {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
+          confirmButtonText: 'Confirm',
+          cancelButtonText: 'Cancel',
           type: user.active ? 'warning' : 'info'
         }
       ).then(async () => {
         try {
           await adminService.updateUserStatus(user.id, !user.active);
-          ElMessage.success(`用户${!user.active ? '启用' : '禁用'}成功`);
-          fetchUsers(); // 重新加载用户列表
+          ElMessage.success(`User ${!user.active ? 'enabled' : 'disabled'} successfully`);
+          fetchUsers(); // Reload user list
         } catch (error) {
-          ElMessage.error(error.response?.data?.message || `更新用户状态失败`);
-          console.error('更新用户状态错误:', error);
+          ElMessage.error(error.response?.data?.message || `Failed to update user status`);
+          console.error('Update user status error:', error);
         }
       }).catch(() => {});
     };
@@ -329,7 +329,7 @@ export default {
       currentPage.value = page;
     };
     
-    // 组件挂载时获取用户列表
+    // Fetch user list on mount
     onMounted(() => {
       fetchUsers();
     });

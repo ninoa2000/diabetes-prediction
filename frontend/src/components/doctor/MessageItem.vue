@@ -9,7 +9,7 @@
             :type="message.read ? 'success' : 'danger'"
             effect="dark"
           >
-            {{ message.read ? '已读' : '未读' }}
+            {{ message.read ? 'Read' : 'Unread' }}
           </el-tag>
         </div>
         <div class="message-time">{{ formatDate(message.createdAt) }}</div>
@@ -19,7 +19,7 @@
       
       <div v-if="message.read && message.replyContent" class="reply-content">
         <div class="reply-header">
-          <span class="reply-label">回复：</span>
+          <span class="reply-label">Reply:</span>
           <span class="reply-time">{{ formatDate(message.updatedAt) }}</span>
         </div>
         <div class="reply-text">{{ message.replyContent }}</div>
@@ -31,7 +31,7 @@
           size="small" 
           @click="$emit('reply', message)"
         >
-          回复
+          Reply
         </el-button>
         
         <el-button 
@@ -40,7 +40,7 @@
           size="small" 
           @click="$emit('mark-read', message.id)"
         >
-          标记为已读
+          Mark as Read
         </el-button>
       </div>
     </el-card>
@@ -63,7 +63,7 @@ defineEmits(['reply', 'mark-read']);
 // Format date for display
 const formatDate = (dateString) => {
   const date = new Date(dateString);
-  return date.toLocaleString('zh-CN', {
+  return date.toLocaleString('en-US', {
     year: 'numeric',
     month: '2-digit',
     day: '2-digit',

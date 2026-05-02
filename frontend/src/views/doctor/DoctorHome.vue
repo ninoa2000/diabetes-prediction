@@ -2,23 +2,23 @@
   <div class="doctor-home">
     <div class="welcome-container">
       <div class="welcome-content">
-        <h1 class="welcome-title">欢迎回来，{{ doctorName || '医生' }}</h1>
-        <p class="welcome-subtitle">糖尿病预测系统</p>
+        <h1 class="welcome-title">Welcome back, {{ doctorName || 'Doctor' }}</h1>
+        <p class="welcome-subtitle">Diabetes Prediction System</p>
         <div class="stats-container">
           <div class="stat-card">
             <div class="stat-icon">👨‍⚕️</div>
             <div class="stat-value">{{ stats?.patientCount || 0 }}</div>
-            <div class="stat-label">当前患者</div>
+            <div class="stat-label">Current Patients</div>
           </div>
           <div class="stat-card">
             <div class="stat-icon">📊</div>
             <div class="stat-value">{{ stats?.totalPredictions || 0 }}</div>
-            <div class="stat-label">预测记录</div>
+            <div class="stat-label">Predictions</div>
           </div>
           <div class="stat-card">
             <div class="stat-icon">💬</div>
             <div class="stat-value">{{ stats?.unreadMessages || 0 }}</div>
-            <div class="stat-label">未读消息</div>
+            <div class="stat-label">Unread Messages</div>
           </div>
         </div>
       </div>
@@ -41,7 +41,7 @@ export default {
         const response = await doctorService.getDashboardStats();
         stats.value = response.data;
         
-        // 从localStorage获取医生姓名
+        // Get doctor name from localStorage
         const userStr = localStorage.getItem('user');
         if (userStr) {
           const user = JSON.parse(userStr);

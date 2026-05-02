@@ -3,7 +3,7 @@
     <el-card class="history-card">
       <template #header>
         <div class="card-header">
-          <h2>历史预测记录</h2>
+          <h2>Historical Prediction Records</h2>
           <div>
             <el-button 
               type="primary" 
@@ -12,7 +12,7 @@
               @click="goToPrediction"
               :disabled="loading"
             >
-              新建预测
+              New Prediction
             </el-button>
             <el-button 
               type="danger" 
@@ -21,7 +21,7 @@
               @click="confirmClearHistory"
               :disabled="loading || historyRecords.length === 0"
             >
-              清空记录
+              Clear Records
             </el-button>
           </div>
         </div>
@@ -32,8 +32,8 @@
       </div>
       
       <div v-else-if="historyRecords.length === 0" class="empty-container">
-        <el-empty description="暂无历史记录" :image-size="200">
-          <el-button type="primary" @click="goToPrediction">开始预测</el-button>
+        <el-empty description="No history records available" :image-size="200">
+          <el-button type="primary" @click="goToPrediction">Start Prediction</el-button>
         </el-empty>
       </div>
       
@@ -49,11 +49,11 @@
             <el-card class="history-item-card">
               <div class="history-item-header">
                 <div class="history-item-title">
-                  糖尿病风险评估结果
+                  Diabetes Risk Assessment Result
                 </div>
                 <div class="history-item-actions">
                   <el-tag :type="getRiskLevelType(record.result.riskLevel)">
-                    {{ record.result.riskLevel }} 风险
+                    {{ record.result.riskLevel }} Risk
                   </el-tag>
                   <span class="history-risk-percentage">{{ record.result.riskPercentage }}%</span>
                 </div>
@@ -62,21 +62,21 @@
               <div class="history-item-content">
                 <div class="history-item-summary">
                   <el-descriptions :column="3" border size="small">
-                    <el-descriptions-item label="年龄">{{ record.healthData.age }} 岁</el-descriptions-item>
-                    <el-descriptions-item label="性别">{{ record.healthData.gender === 'male' ? '男' : '女' }}</el-descriptions-item>
+                    <el-descriptions-item label="Age">{{ record.healthData.age }} yrs</el-descriptions-item>
+                    <el-descriptions-item label="Gender">{{ record.healthData.gender === 'male' ? 'Male' : 'Female' }}</el-descriptions-item>
                     <el-descriptions-item label="BMI">{{ record.healthData.bmi }}</el-descriptions-item>
                     
-                    <el-descriptions-item label="血压">
+                    <el-descriptions-item label="Blood Pressure">
                       {{ record.healthData.bloodPressure.systolic }}/{{ record.healthData.bloodPressure.diastolic }} mmHg
                     </el-descriptions-item>
-                    <el-descriptions-item label="血糖">{{ record.healthData.bloodSugar }} mg/dL</el-descriptions-item>
-                    <el-descriptions-item label="胆固醇">{{ record.healthData.cholesterol }} mg/dL</el-descriptions-item>
+                    <el-descriptions-item label="Blood Sugar">{{ record.healthData.bloodSugar }} mg/dL</el-descriptions-item>
+                    <el-descriptions-item label="Cholesterol">{{ record.healthData.cholesterol }} mg/dL</el-descriptions-item>
                   </el-descriptions>
                 </div>
                 
                 <div class="history-item-footer">
                   <el-collapse>
-                    <el-collapse-item title="健康建议">
+                    <el-collapse-item title="Health Advice">
                       <div class="recommendations">
                         <ul>
                           <li v-for="(recommendation, index) in record.result.recommendations" :key="index">
@@ -93,14 +93,14 @@
                       link 
                       @click="viewDetails(record)"
                     >
-                      查看详情
+                      View Details
                     </el-button>
                     <el-button 
                       type="danger" 
                       link 
                       @click="confirmDeleteRecord(record.id)"
                     >
-                      删除记录
+                      Delete Record
                     </el-button>
                   </div>
                 </div>
@@ -126,7 +126,7 @@ const historyRecords = ref([]);
 // Format date for display
 const formatDate = (dateString) => {
   const date = new Date(dateString);
-  return date.toLocaleString('zh-CN', {
+  return date.toLocaleString('en-GB', {
     year: 'numeric',
     month: '2-digit',
     day: '2-digit',
@@ -177,11 +177,11 @@ const viewDetails = (record) => {
 // Confirm delete record
 const confirmDeleteRecord = (recordId) => {
   ElMessageBox.confirm(
-    '确定要删除这条预测记录吗？',
-    '删除确认',
+    'Are you sure you want to delete this prediction record?',
+    'Delete Confirmation',
     {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
+      confirmButtonText: 'Confirm',
+      cancelButtonText: 'Cancel',
       type: 'warning'
     }
   ).then(() => {
@@ -199,17 +199,17 @@ const deleteRecord = (recordId) => {
   // Update localStorage
   localStorage.setItem('prediction_history', JSON.stringify(historyRecords.value));
   
-  ElMessage.success('记录已删除');
+  ElMessage.success('Record deleted successfully');
 };
 
 // Confirm clear all history
 const confirmClearHistory = () => {
   ElMessageBox.confirm(
-    '确定要清空所有预测记录吗？此操作不可恢复。',
-    '清空确认',
+    'Are you sure you want to clear all prediction records? This action cannot be undone.',
+    'Clear Confirmation',
     {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
+      confirmButtonText: 'Confirm',
+      cancelButtonText: 'Cancel',
       type: 'warning'
     }
   ).then(() => {
@@ -223,7 +223,7 @@ const confirmClearHistory = () => {
 const clearHistory = () => {
   historyRecords.value = [];
   localStorage.removeItem('prediction_history');
-  ElMessage.success('所有记录已清空');
+  ElMessage.success('All records cleared');
 };
 
 // Load history records
@@ -233,7 +233,7 @@ const loadHistory = async () => {
     const response = await predictionService.getPredictionHistory();
     historyRecords.value = response.data;
   } catch (error) {
-    ElMessage.error('加载历史记录失败');
+    ElMessage.error('Failed to load history records');
     console.error('Failed to load history:', error);
   } finally {
     loading.value = false;

@@ -18,7 +18,7 @@ public class UserMysqlController {
     private final UsersRepository usersRepository;
 
     /**
-     * 注册用户
+     * Register user
      */
     @PostMapping("/register")
     public User register(@RequestBody User user) {
@@ -28,7 +28,7 @@ public class UserMysqlController {
     }
 
     /**
-     * 查询所有用户（支持分页）
+     * Query all users (with pagination support)
      */
     @GetMapping
     public Map<String, Object> getAllUsers(
@@ -60,16 +60,16 @@ public class UserMysqlController {
     }
 
     /**
-     * 获取指定 ID 的用户信息
+     * Get user information by ID
      */
     @GetMapping("/{id}")
     public User getUserById(@PathVariable Integer id) {
         return usersRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("用户不存在"));
+                .orElseThrow(() -> new RuntimeException("User does not exist"));
     }
 
     /**
-     * 更新用户信息
+     * Update user information
      */
     @PutMapping("/{id}")
     public User updateUser(
@@ -77,7 +77,7 @@ public class UserMysqlController {
             @Valid @RequestBody User updateData) {
 
         User user = usersRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("用户不存在"));
+                .orElseThrow(() -> new RuntimeException("User does not exist"));
 
         if (updateData.getName() != null) user.setName(updateData.getName());
         if (updateData.getPhone() != null) user.setPhone(updateData.getPhone());

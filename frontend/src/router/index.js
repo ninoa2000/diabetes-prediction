@@ -23,9 +23,9 @@ const HealthGuide = () => import('@/views/education/HealthGuide.vue');
 const LatestResearch = () => import('@/views/education/LatestResearch.vue');
 const SeasonalTips = () => import('@/views/education/SeasonalTips.vue');
 const NotFound = () => import('@/views/error/NotFound.vue');
-const KnowledgeManage=() => import('@/views/admin/KnowledgeManage.vue');
+const KnowledgeManage = () => import('@/views/admin/KnowledgeManage.vue');
 
-// 角色常量定义
+// Role constants definition
 const ROLE_ADMIN = 'ROLE_ADMIN';
 const ROLE_DOCTOR = 'ROLE_DOCTOR';
 const ROLE_USER = 'ROLE_USER';
@@ -101,7 +101,7 @@ const routes = [
         meta: { requiresAuth: true, title: 'Profile', role: [ROLE_ADMIN, ROLE_DOCTOR, ROLE_USER] },
       },
       {
-         path: 'user/change-password',
+        path: 'user/change-password',
         name: 'ChangePassword',
         component: ChangePassword,
         meta: { requiresAuth: true, title: 'Change Password', role: [ROLE_USER, ROLE_DOCTOR] },
@@ -123,7 +123,7 @@ const routes = [
         path: 'admin/KnowledgeManage',
         name: 'KnowledgeManage',
         component: KnowledgeManage,
-        meta: { requiresAuth: false, title: 'Knowledge Management', role: [ROLE_ADMIN ] },
+        meta: { requiresAuth: false, title: 'Knowledge Management', role: [ROLE_ADMIN] },
       },
       // Doctor routes
       {
@@ -144,7 +144,7 @@ const routes = [
         component: () => import('@/views/doctor/PatientCases.vue'),
         meta: { requiresAuth: true, title: 'Patient Cases', role: [ROLE_DOCTOR] }
       },
-      
+
       // Education routes
       {
         path: 'education/disease-info',
@@ -188,27 +188,27 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
   const token = localStorage.getItem('token');
   const userRole = localStorage.getItem('userRole');
-  
-  console.log('当前用户角色:', userRole);
-  console.log('目标路由需要的角色:', to.meta.role);
-  
+
+  console.log('Current user role:', userRole);
+  console.log('Required role for target route:', to.meta.role);
+
   // Set page title
   if (to.meta.title) {
     document.title = `${to.meta.title} - Diabetes Prediction System`;
   }
-  
+
   // Check auth requirements
   if (to.meta.requiresAuth && !token) {
-    console.log('需要认证但没有token，重定向到登录页');
+    console.log('Auth required but no token found, redirecting to login');
     next({ name: 'Login' });
-  } 
+  }
   // Check role requirements if specified
   else if (to.meta.role && token && userRole) {
     if (to.meta.role.includes(userRole)) {
-      console.log('用户有权访问该路由');
+      console.log('User authorized for this route');
       next();
     } else {
-      console.log('用户无权访问该路由，重定向到对应首页');
+      console.log('User unauthorized, redirecting to appropriate home');
       if (userRole === ROLE_ADMIN) {
         next({ path: '/admin/doctors' });
       } else if (userRole === ROLE_DOCTOR) {

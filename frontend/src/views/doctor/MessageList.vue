@@ -3,7 +3,7 @@
     <el-card class="message-card">
       <template #header>
         <div class="card-header">
-          <h2>患者留言</h2>
+          <h2>Patient Messages</h2>
         </div>
       </template>
       
@@ -13,18 +13,18 @@
       
       <template v-else>
         <div v-if="messages.length === 0" class="empty-messages">
-          <el-empty description="暂无患者留言" :image-size="200">
+          <el-empty description="No patient messages yet" :image-size="200">
             <template #description>
-              <p>当患者发送留言后，将会显示在这里</p>
+              <p>When patients send messages, they will appear here.</p>
             </template>
           </el-empty>
         </div>
         
         <div v-else class="messages-list">
           <el-tabs v-model="activeTab" class="message-tabs">
-            <el-tab-pane label="未读留言" name="unread">
+            <el-tab-pane label="Unread" name="unread">
               <div v-if="unreadMessages.length === 0" class="empty-tab">
-                <el-empty description="暂无未读留言" :image-size="100" />
+                <el-empty description="No unread messages" :image-size="100" />
               </div>
               <message-item
                 v-else
@@ -36,9 +36,9 @@
               />
             </el-tab-pane>
             
-            <el-tab-pane label="已读留言" name="read">
+            <el-tab-pane label="Read" name="read">
               <div v-if="readMessages.length === 0" class="empty-tab">
-                <el-empty description="暂无已读留言" :image-size="100" />
+                <el-empty description="No read messages" :image-size="100" />
               </div>
               <message-item
                 v-else
@@ -57,20 +57,20 @@
     <!-- Reply Dialog -->
     <el-dialog
       v-model="replyDialogVisible"
-      title="回复留言"
+      title="Reply to Message"
       width="500px"
       :close-on-click-modal="false"
     >
       <div v-if="currentMessage" class="reply-dialog-content">
         <div class="original-message">
-          <h4>患者留言：</h4>
+          <h4>Patient Message:</h4>
           <div class="message-meta">
             <div>
-              <span class="meta-label">患者：</span>
+              <span class="meta-label">Patient:</span>
               <span>{{ currentMessage.fromUserName }}</span>
             </div>
             <div>
-              <span class="meta-label">时间：</span>
+              <span class="meta-label">Time:</span>
               <span>{{ formatDate(currentMessage.createdAt) }}</span>
             </div>
           </div>
@@ -83,7 +83,7 @@
               v-model="replyForm.content"
               type="textarea"
               :rows="4"
-              placeholder="请输入回复内容..."
+              placeholder="Enter your reply here..."
             />
           </el-form-item>
         </el-form>
@@ -91,9 +91,9 @@
       
       <template #footer>
         <div class="dialog-footer">
-          <el-button @click="replyDialogVisible = false">取消</el-button>
+          <el-button @click="replyDialogVisible = false">Cancel</el-button>
           <el-button type="primary" @click="submitReply" :loading="submitting">
-            发送回复
+            Send Reply
           </el-button>
         </div>
       </template>
@@ -123,8 +123,8 @@ const replyForm = reactive({
 // Form validation rules
 const formRules = {
   content: [
-    { required: true, message: '请输入回复内容', trigger: 'blur' },
-    { min: 5, max: 500, message: '回复长度在 5 到 500 个字符', trigger: 'blur' }
+    { required: true, message: 'Please enter reply content', trigger: 'blur' },
+    { min: 5, max: 500, message: 'Reply length should be between 5 and 500 characters', trigger: 'blur' }
   ]
 };
 
@@ -140,7 +140,7 @@ const unreadMessages = computed(() => {
 // Format date for display
 const formatDate = (dateString) => {
   const date = new Date(dateString);
-  return date.toLocaleString('zh-CN', {
+  return date.toLocaleString('en-US', {
     year: 'numeric',
     month: '2-digit',
     day: '2-digit',
@@ -167,9 +167,9 @@ const handleMarkAsRead = async (messageId) => {
       message.read = true;
     }
     
-    ElMessage.success('留言已标记为已读');
+    ElMessage.success('Message marked as read');
   } catch (error) {
-    ElMessage.error('操作失败');
+    ElMessage.error('Action failed');
     console.error('Failed to mark message as read:', error);
   }
 };
@@ -193,10 +193,10 @@ const submitReply = () => {
         await loadMessages();
       }
       
-      ElMessage.success('回复已发送');
+      ElMessage.success('Reply sent successfully');
       replyDialogVisible.value = false;
     } catch (error) {
-      ElMessage.error('回复发送失败');
+      ElMessage.error('Failed to send reply');
       console.error('Failed to send reply:', error);
     } finally {
       submitting.value = false;
@@ -211,7 +211,7 @@ const loadMessages = async () => {
     const response = await messageService.getDoctorMessages();
     messages.value = response.data;
   } catch (error) {
-    ElMessage.error('加载留言失败');
+    ElMessage.error('Failed to load messages');
     console.error('Failed to load messages:', error);
   } finally {
     loading.value = false;

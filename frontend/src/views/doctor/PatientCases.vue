@@ -4,11 +4,11 @@
       <template #header>
         <div class="card-header">
           <div class="header-left">
-            <el-button @click="goBack" icon="el-icon-back" size="small">返回</el-button>
-            <h2>患者病历列表</h2>
+            <el-button @click="goBack" icon="el-icon-back" size="small">Back</el-button>
+            <h2>Patient Medical Records</h2>
           </div>
           <div class="patient-info" v-if="patientInfo">
-            <span>患者：{{ patientInfo.name }}</span>
+            <span>Patient: {{ patientInfo.name }}</span>
           </div>
         </div>
       </template>
@@ -19,24 +19,24 @@
 
       <template v-else>
         <div v-if="!cases.length" class="empty-container">
-          <el-empty description="暂无病历记录" />
+          <el-empty description="No medical records found" />
         </div>
 
         <el-table v-else :data="cases" style="width: 100%">
-          <el-table-column label="上传时间" width="180">
+          <el-table-column label="Upload Time" width="180">
             <template #default="scope">
               {{ formatDate(scope.row.createdAt) }}
             </template>
           </el-table-column>
-          <el-table-column label="预测结果" prop="disease" />
-          <el-table-column label="操作" width="120">
+          <el-table-column label="Prediction Result" prop="disease" />
+          <el-table-column label="Actions" width="120">
             <template #default="scope">
               <el-button
                 type="primary"
                 size="small"
                 @click="viewDetails(scope.row)"
               >
-                查看详情
+                View Details
               </el-button>
             </template>
           </el-table-column>
@@ -44,21 +44,21 @@
       </template>
     </el-card>
 
-    <!-- 病历详情对话框 -->
+    <!-- Case Details Dialog -->
     <el-dialog
       v-model="dialogVisible"
-      title="病历详情"
+      title="Record Details"
       width="50%"
       :before-close="handleDialogClose"
     >
       <div v-if="selectedCase" class="case-detail">
         <el-descriptions :column="2" border>
-          <el-descriptions-item label="上传时间">{{ formatDate(selectedCase.createdAt) }}</el-descriptions-item>
-          <el-descriptions-item label="预测结果">{{ selectedCase.disease || '暂无' }}</el-descriptions-item>
+          <el-descriptions-item label="Upload Time">{{ formatDate(selectedCase.createdAt) }}</el-descriptions-item>
+          <el-descriptions-item label="Prediction Result">{{ selectedCase.disease || 'N/A' }}</el-descriptions-item>
         </el-descriptions>
 
         <div class="health-data-section">
-          <h3>健康数据</h3>
+          <h3>Health Data</h3>
           <el-descriptions :column="2" border>
             <el-descriptions-item 
               v-for="(value, key) in selectedCase.healthData" 
@@ -88,23 +88,23 @@ const patientInfo = ref(null);
 const dialogVisible = ref(false);
 const selectedCase = ref(null);
 
-// 加载病历列表
+// Load case list
 const loadCases = async () => {
   try {
     loading.value = true;
     const patientId = route.params.patientId;
     console.log('Loading cases for patientId:', patientId);
     
-    // 获取患者信息
+    // Get patient info
     const patientResponse = await doctorService.getPatientDetail(patientId);
     console.log('Patient detail response:', patientResponse);
     patientInfo.value = patientResponse.data;
     
-    // 获取病历列表
+    // Get cases list
     const response = await doctorService.getPatientCases(patientId);
     console.log('Patient cases response:', response);
     
-    // 确保数据是数组
+    // Ensure data is array
     let casesData = [];
     if (response && Array.isArray(response)) {
       casesData = response;
@@ -114,24 +114,24 @@ const loadCases = async () => {
     
     console.log('Cases data to set:', casesData);
     
-    // 使用解构赋值来确保响应式更新
+    // Use spread to ensure reactive update
     cases.value = [...casesData];
     console.log('Cases value after setting:', cases.value);
   } catch (error) {
     console.error('Failed to load cases:', error);
-    ElMessage.error('加载病历列表失败');
+    ElMessage.error('Failed to load medical records');
     cases.value = [];
   } finally {
     loading.value = false;
   }
 };
 
-// 格式化日期
+// Format date
 const formatDate = (dateStr) => {
-  if (!dateStr) return '暂无';
+  if (!dateStr) return 'N/A';
   try {
     const date = new Date(dateStr);
-    return date.toLocaleString('zh-CN', {
+    return date.toLocaleString('en-US', {
       year: 'numeric',
       month: '2-digit',
       day: '2-digit',
@@ -140,7 +140,7 @@ const formatDate = (dateStr) => {
     });
   } catch (error) {
     console.error('Date formatting error:', error);
-    return '暂无';
+    return 'N/A';
   }
 };
 
