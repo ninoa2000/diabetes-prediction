@@ -27,6 +27,7 @@
         <el-tab-pane label="Sleep Health" name="sleep" />
         <el-tab-pane label="Stress Management" name="stress" />
         <el-tab-pane label="Healthy Habits" name="habits" />
+        <el-tab-pane label="Health Tips" name="tips" />
       </el-tabs>
 
       <div class="mt-5">
@@ -240,6 +241,43 @@
             </el-col>
           </el-row>
         </div>
+
+        <!-- 6. 健康小贴士 (Health Tips) -->
+        <div v-if="tab === 'tips'">
+          <el-row :gutter="20">
+            <el-col :xs="24" :md="12">
+              <h2 class="text-h5 mb-4">Principles of Daily Care</h2>
+              <el-card>
+                <el-collapse>
+                  <el-collapse-item
+                    v-for="(item, i) in tipsPrinciples"
+                    :key="i"
+                    :title="item.title"
+                  >
+                    <div class="item-content">
+                      <el-avatar :size="36" class="primary-bg">
+                        <el-icon><Check /></el-icon>
+                      </el-avatar>
+                      <span>{{ item.description }}</span>
+                    </div>
+                  </el-collapse-item>
+                </el-collapse>
+              </el-card>
+            </el-col>
+            <el-col :xs="24" :md="12">
+              <h2 class="text-h5 mb-4">Practical Health Advice</h2>
+              <el-card>
+                <div class="card-content">
+                  <el-table :data="habitsList" border style="width:100%">
+                    <el-table-column prop="title" label="Title" />
+                    <el-table-column prop="category" label="Category" width="120" />
+                    <el-table-column prop="content" label="Tip Content" />
+                  </el-table>
+                </div>
+              </el-card>
+            </el-col>
+          </el-row>
+        </div>
       </div>
     </el-main>
   </el-container>
@@ -247,12 +285,20 @@
 
 <script setup>
 import { ref, onMounted, watch } from 'vue';
-import { listNutrition } from '../../api/Knowledge';
+import { listNutrition, listHabit } from '../../api/Knowledge';
 import { Check, ArrowRight, SuccessFilled, StarFilled, Moon } from '@element-plus/icons-vue';
 
 // 导入静态数据
 const tab = ref('nutrition');
 const nutritionList = ref([]);
+const habitsList = ref([]);
+
+const tipsPrinciples = [
+  { title: 'Consistency is Key', description: 'Small, consistent daily actions lead to the most significant long-term health benefits.' },
+  { title: 'Listen to Your Body', description: 'Pay attention to physical signals. Rest when tired, and eat when genuinely hungry.' },
+  { title: 'Stay Positive', description: 'A positive mindset can reduce stress hormones and improve your immune system function.' },
+  { title: 'Regular Check-ups', description: 'Do not wait for symptoms. Regular screenings help catch potential issues early.' }
+];
 
 const nutritionPrinciples = [
   { title: 'Diversified Diet', description: 'Eat a variety of foods every day, including vegetables, fruits, whole grains, protein, and healthy fats', icon: Check },
@@ -469,10 +515,22 @@ async function loadNutrition() {
   }
 }
 
+async function loadHabits() {
+  try {
+    const res = await listHabit();
+    habitsList.value = Array.isArray(res) ? res : [];
+  } catch (e) {
+    console.error('Failed to load health tips', e);
+  }
+}
+
 watch(tab, (val) => {
   if (val === 'nutrition') loadNutrition();
+  if (val === 'tips') loadHabits();
 });
-onMounted(loadNutrition);
+onMounted(() => {
+  loadNutrition();
+});
 </script>
 
 <style scoped>

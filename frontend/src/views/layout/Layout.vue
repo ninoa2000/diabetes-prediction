@@ -77,7 +77,6 @@
             <el-menu-item index="/education/disease-info">Diabetes Info</el-menu-item>
             <el-menu-item index="/education/health-guide">Health Guide</el-menu-item>
             <el-menu-item index="/education/latest-research">Latest Research</el-menu-item>
-            <el-menu-item index="/education/seasonal-tips">Health Tips</el-menu-item>
           </el-sub-menu>
           
           <!-- Non-admin Profile -->
