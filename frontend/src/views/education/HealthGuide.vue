@@ -11,10 +11,10 @@
         </el-col>
         <el-col :xs="24" :md="8">
           <el-image
-            src="/images/default.jpg"
+            src="https://images.unsplash.com/photo-1490645935967-10de6ba17061?auto=format&fit=crop&w=800&q=80"
             style="height: 200px; width: 100%"
             fit="cover"
-            class="rounded-lg"
+            class="rounded-lg shadow-sm"
           ></el-image>
         </el-col>
       </el-row>
