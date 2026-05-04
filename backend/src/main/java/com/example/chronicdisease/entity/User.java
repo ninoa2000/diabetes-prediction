@@ -28,7 +28,7 @@ public class User {
     @Column(nullable = false, length = 20)
     private String phone;
 
-    @Column(columnDefinition = "JSON", nullable = false)
+    @Column(length = 255, nullable = false)
     private String roles;
 
     @Column(nullable = false)

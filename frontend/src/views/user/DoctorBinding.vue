@@ -29,9 +29,20 @@
         
         <div v-else class="doctor-selection">
           <div class="section-title">Available Doctors</div>
-          <div class="section-description">Please select a doctor to bind. After binding, you can send messages to the doctor.</div>
+          <div class="section-description">
+            Please select a doctor to bind. After binding, you can send messages to the doctor.
+            <div v-if="availableDoctors.length === 0" class="no-doctors-hint">
+              <el-alert
+                title="No doctors available"
+                type="info"
+                description="There are currently no doctors in the system. Use the default doctor account (doctor1/doctor123) for testing or create a new one in the Admin panel."
+                show-icon
+              />
+            </div>
+          </div>
           
           <el-table
+            v-if="availableDoctors.length > 0"
             :data="pagedDoctors"
             style="width: 100%"
             @row-click="handleRowClick"

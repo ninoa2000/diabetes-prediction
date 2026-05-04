@@ -22,63 +22,96 @@
         </div>
         
         <template v-else>
-          <div class="doctor-info">
-            <span class="info-label">Currently Bound Doctor:</span>
-            <el-tag size="large">{{ boundDoctor.name }}</el-tag>
-            <span class="info-detail">{{ boundDoctor.department }} - {{ boundDoctor.specialty }}</span>
+          <div class="doctor-profile-mini">
+            <el-avatar :size="50" icon="UserFilled" />
+            <div class="doctor-details">
+              <h3>{{ boundDoctor.name }}</h3>
+              <p>{{ boundDoctor.department }} • {{ boundDoctor.specialty }}</p>
+            </div>
+            <el-button type="primary" plain @click="loadMessages">
+              <el-icon><Refresh /></el-icon> Refresh
+            </el-button>
           </div>
           
-          <div class="message-form">
-            <h3>Send New Message</h3>
+          <div class="chat-area">
+            <div v-if="messages.length === 0" class="empty-chat">
+              <el-empty description="Start a conversation with your doctor" />
+            </div>
+            
+            <div v-else class="message-threads">
+              <div v-for="message in messages" :key="message.id" class="message-item-container">
+                <!-- Patient Message (Current User) -->
+                <div v-if="message.type === 'PATIENT_TO_DOCTOR'" class="bubble patient-bubble">
+                  <div class="bubble-header">
+                    <span class="user-name">You</span>
+                    <span class="time">{{ formatDate(message.createdAt) }}</span>
+                  </div>
+                  <div class="bubble-content">
+                    <div v-if="message.imageUrl" class="message-image">
+                      <el-image :src="message.imageUrl" :preview-src-list="[message.imageUrl]" fit="cover" />
+                    </div>
+                    {{ message.content }}
+                  </div>
+                </div>
+                
+                <!-- Doctor Message -->
+                <div v-else-if="message.type === 'DOCTOR_TO_PATIENT'" class="bubble doctor-bubble">
+                  <div class="bubble-header">
+                    <span class="user-name">{{ boundDoctor.name }}</span>
+                    <span class="time">{{ formatDate(message.createdAt) }}</span>
+                  </div>
+                  <div class="bubble-content">
+                    <div v-if="message.imageUrl" class="message-image">
+                      <el-image :src="message.imageUrl" :preview-src-list="[message.imageUrl]" fit="cover" />
+                    </div>
+                    {{ message.content }}
+                  </div>
+                </div>
+
+                <!-- Legacy Reply Support -->
+                <div v-if="message.replyContent" class="bubble doctor-bubble legacy-reply">
+                  <div class="bubble-header">
+                    <span class="user-name">{{ boundDoctor.name }} (Reply)</span>
+                    <span class="time">{{ formatDate(message.updatedAt) }}</span>
+                  </div>
+                  <div class="bubble-content">{{ message.replyContent }}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="message-input-area">
             <el-form :model="messageForm" ref="messageFormRef" :rules="formRules">
               <el-form-item prop="content">
                 <el-input
                   v-model="messageForm.content"
                   type="textarea"
-                  :rows="4"
-                  placeholder="Please enter your message, such as health consultation or prediction explanation..."
+                  :rows="3"
+                  placeholder="Type your message to the doctor here..."
+                  resize="none"
                 />
               </el-form-item>
-              <el-form-item>
+              <el-form-item v-if="showImageUrlInput" label="Image URL">
+                <el-input v-model="messageForm.imageUrl" placeholder="Paste image link here..." />
+              </el-form-item>
+              <div class="input-actions">
+                <div class="left-actions">
+                  <el-button @click="showImageUrlInput = !showImageUrlInput" size="small" :type="showImageUrlInput ? 'primary' : ''">
+                    <el-icon><Picture /></el-icon> {{ showImageUrlInput ? 'Cancel Image' : 'Add Image' }}
+                  </el-button>
+                  <span class="hint ml-2">Your doctor will be notified.</span>
+                </div>
                 <el-button 
                   type="primary"
+                  size="large"
                   @click="submitMessage"
                   :loading="submitting"
+                  class="send-btn"
                 >
-                  Send Message
+                  <el-icon class="mr-1"><Position /></el-icon> Send Message
                 </el-button>
-              </el-form-item>
+              </div>
             </el-form>
-          </div>
-          
-          <div class="message-history">
-            <h3>Message History</h3>
-            
-            <div v-if="messages.length === 0" class="empty-messages">
-              <el-empty description="No Message History" :image-size="100" />
-            </div>
-            
-            <div v-else>
-              <el-timeline>
-                <el-timeline-item
-                  v-for="message in messages"
-                  :key="message.id"
-                  :timestamp="formatDate(message.createdAt)"
-                  :type="message.read ? 'success' : 'primary'"
-                >
-                  <el-card class="message-item">
-                    <div class="message-content">{{ message.content }}</div>
-                    <div v-if="message.replyContent" class="reply-content">
-                      <div class="reply-label">Doctor Reply:</div>
-                      <div class="reply-text">{{ message.replyContent }}</div>
-                    </div>
-                    <div v-if="!message.read" class="message-status">
-                      <el-tag size="small" type="info">Unreplied</el-tag>
-                    </div>
-                  </el-card>
-                </el-timeline-item>
-              </el-timeline>
-            </div>
           </div>
         </template>
       </template>
@@ -96,13 +129,15 @@ import { doctorService } from '@/api/doctor';
 const router = useRouter();
 const loading = ref(false);
 const submitting = ref(false);
+const showImageUrlInput = ref(false);
 const boundDoctor = ref(null);
 const messages = ref([]);
 const messageFormRef = ref(null);
 
 // Message form
 const messageForm = reactive({
-  content: ''
+  content: '',
+  imageUrl: ''
 });
 
 // Form validation rules
@@ -142,11 +177,13 @@ const submitMessage = () => {
     
     try {
       submitting.value = true;
-      await messageService.sendMessage(boundDoctor.value.id, messageForm.content);
+      await messageService.sendMessage(boundDoctor.value.id, messageForm.content, messageForm.imageUrl);
       ElMessage.success('Message sent successfully');
       
       // Clear form
       messageForm.content = '';
+      messageForm.imageUrl = '';
+      showImageUrlInput.value = false;
       
       // Reload messages
       await loadMessages();
@@ -198,95 +235,133 @@ onMounted(() => {
 
 <style scoped>
 .message-container {
-  max-width: 800px;
+  max-width: 900px;
   margin: 0 auto;
   padding: 20px;
 }
 
 .message-card {
-  width: 100%;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
 }
 
-.card-header {
+.doctor-profile-mini {
+  display: flex;
+  align-items: center;
+  padding: 15px;
+  background: #f8fafc;
+  border-radius: 12px;
+  margin-bottom: 20px;
+}
+
+.doctor-details {
+  flex: 1;
+  margin-left: 15px;
+}
+
+.doctor-details h3 {
+  margin: 0;
+  font-size: 16px;
+  color: #1e293b;
+}
+
+.doctor-details p {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: #64748b;
+}
+
+.chat-area {
+  height: 450px;
+  overflow-y: auto;
+  padding: 20px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  margin-bottom: 20px;
+}
+
+.message-item-container {
+  margin-bottom: 25px;
+  display: flex;
+  flex-direction: column;
+}
+
+.bubble {
+  max-width: 85%;
+  padding: 12px 18px;
+  border-radius: 20px;
+  margin-bottom: 10px;
+  position: relative;
+  line-height: 1.6;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+  font-size: 14.5px;
+}
+
+.bubble-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  opacity: 0.7;
+}
+
+.patient-bubble {
+  align-self: flex-end;
+  background: linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%);
+  color: white;
+  border-bottom-right-radius: 4px;
+}
+
+.doctor-bubble {
+  align-self: flex-start;
+  background: #ffffff;
+  color: #1e293b;
+  border: 1px solid #f1f5f9;
+  border-bottom-left-radius: 4px;
+}
+
+.legacy-reply {
+  margin-top: -5px;
+  background: #f8fafc;
+  border-style: dashed;
+}
+
+.message-input-area {
+  padding-top: 25px;
+  border-top: 1px solid #f1f5f9;
+}
+
+.input-actions {
   display: flex;
   justify-content: space-between;
   align-items: center;
-}
-
-.card-header h2 {
-  margin: 0;
-  font-size: 20px;
-  font-weight: 600;
-}
-
-.loading-container, .no-doctor {
-  padding: 40px 0;
-  text-align: center;
-}
-
-.doctor-info {
-  margin-bottom: 20px;
-  padding: 10px;
-  background-color: #f5f7fa;
-  border-radius: 4px;
-}
-
-.info-label {
-  margin-right: 10px;
-  font-weight: 600;
-}
-
-.info-detail {
-  margin-left: 10px;
-  color: #606266;
-}
-
-.message-form, .message-history {
-  margin-top: 30px;
-}
-
-.message-form h3, .message-history h3 {
-  margin-top: 0;
-  margin-bottom: 15px;
-  font-size: 18px;
-  font-weight: 600;
-  color: #303133;
-  border-bottom: 1px solid #ebeef5;
-  padding-bottom: 10px;
-}
-
-.empty-messages {
-  padding: 20px 0;
-}
-
-.message-item {
-  margin-bottom: 10px;
-}
-
-.message-content {
-  margin-bottom: 10px;
-  line-height: 1.6;
-}
-
-.message-status {
-  text-align: right;
-}
-
-.reply-content {
   margin-top: 10px;
-  padding: 10px;
-  background-color: #f5f7fa;
-  border-radius: 4px;
 }
 
-.reply-label {
-  font-weight: 600;
-  color: #606266;
-  margin-bottom: 5px;
+.hint {
+  font-size: 12px;
+  color: #94a3b8;
 }
 
-.reply-text {
-  color: #303133;
-  line-height: 1.6;
+.send-btn {
+  padding: 0 30px;
 }
-</style> 
+
+.mr-1 {
+  margin-right: 8px;
+}
+
+/* Custom Scrollbar */
+.chat-area::-webkit-scrollbar {
+  width: 6px;
+}
+.chat-area::-webkit-scrollbar-track {
+  background: transparent;
+}
+.chat-area::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+</style>

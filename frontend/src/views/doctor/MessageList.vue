@@ -57,12 +57,12 @@
     <!-- Reply Dialog -->
     <el-dialog
       v-model="replyDialogVisible"
-      title="Reply to Message"
+      :title="currentMessage ? 'Reply to Message' : `Message to ${targetPatientName}`"
       width="500px"
       :close-on-click-modal="false"
     >
-      <div v-if="currentMessage" class="reply-dialog-content">
-        <div class="original-message">
+      <div v-if="currentMessage || targetPatientId" class="reply-dialog-content">
+        <div v-if="currentMessage" class="original-message">
           <h4>Patient Message:</h4>
           <div class="message-meta">
             <div>
@@ -75,6 +75,10 @@
             </div>
           </div>
           <div class="message-text">{{ currentMessage.content }}</div>
+        </div>
+        
+        <div v-else-if="targetPatientId" class="direct-message-info">
+          <p>Sending message to: <strong>{{ targetPatientName }}</strong></p>
         </div>
         
         <el-form :model="replyForm" ref="replyFormRef" :rules="formRules">
@@ -102,11 +106,13 @@
 </template>
 
 <script setup>
-import { ref, computed, reactive, onMounted } from 'vue';
+import { ref, computed, reactive, onMounted, watch } from 'vue';
+import { useRoute } from 'vue-router';
 import { ElMessage } from 'element-plus';
 import { messageService } from '@/api/message';
 import MessageItem from '@/components/doctor/MessageItem.vue';
 
+const route = useRoute();
 const loading = ref(false);
 const submitting = ref(false);
 const messages = ref([]);
@@ -114,6 +120,10 @@ const activeTab = ref('unread');
 const replyDialogVisible = ref(false);
 const currentMessage = ref(null);
 const replyFormRef = ref(null);
+
+// Direct message from patient list
+const targetPatientId = ref(route.query.patientId || null);
+const targetPatientName = ref(route.query.patientName || '');
 
 // Reply form
 const replyForm = reactive({
@@ -130,11 +140,11 @@ const formRules = {
 
 // Computed properties for message filtering
 const readMessages = computed(() => {
-  return messages.value.filter(message => message.read);
+  return messages.value.filter(message => message.read || message.type === 'DOCTOR_TO_PATIENT');
 });
 
 const unreadMessages = computed(() => {
-  return messages.value.filter(message => !message.read);
+  return messages.value.filter(message => !message.read && message.type === 'PATIENT_TO_DOCTOR');
 });
 
 // Format date for display
@@ -182,22 +192,24 @@ const submitReply = () => {
     try {
       submitting.value = true;
       
-      // Send reply through API
-      await messageService.replyToMessage(currentMessage.value.id, replyForm.content);
-      
-      // Update message status locally
-      const message = messages.value.find(m => m.id === currentMessage.value.id);
-      if (message) {
-        message.read = true;
-        // Reload messages to get the updated reply content
-        await loadMessages();
+      if (currentMessage.value) {
+        // Reply to existing message
+        await messageService.replyToMessage(currentMessage.value.id, replyForm.content);
+        // Also send as a new message to maintain chat history consistency if needed
+        const patientId = currentMessage.value.fromUserId;
+        await messageService.sendMessage(patientId, replyForm.content);
+      } else if (targetPatientId.value) {
+        // Start new message thread
+        await messageService.sendMessage(targetPatientId.value, replyForm.content);
       }
       
-      ElMessage.success('Reply sent successfully');
+      ElMessage.success('Message sent successfully');
       replyDialogVisible.value = false;
+      targetPatientId.value = null; // Clear target after sending
+      await loadMessages();
     } catch (error) {
-      ElMessage.error('Failed to send reply');
-      console.error('Failed to send reply:', error);
+      ElMessage.error('Failed to send message');
+      console.error('Failed to send message:', error);
     } finally {
       submitting.value = false;
     }
@@ -210,6 +222,13 @@ const loadMessages = async () => {
     loading.value = true;
     const response = await messageService.getDoctorMessages();
     messages.value = response.data;
+    
+    // Check if we need to open a direct message dialog
+    if (targetPatientId.value) {
+      currentMessage.value = null;
+      replyForm.content = '';
+      replyDialogVisible.value = true;
+    }
   } catch (error) {
     ElMessage.error('Failed to load messages');
     console.error('Failed to load messages:', error);
@@ -217,6 +236,16 @@ const loadMessages = async () => {
     loading.value = false;
   }
 };
+
+// Watch for route changes (e.g. clicking message button from patient list)
+watch(() => route.query.patientId, (newId) => {
+  if (newId) {
+    targetPatientId.value = newId;
+    targetPatientName.value = route.query.patientName || '';
+    replyForm.content = '';
+    replyDialogVisible.value = true;
+  }
+});
 
 // On component mount
 onMounted(() => {

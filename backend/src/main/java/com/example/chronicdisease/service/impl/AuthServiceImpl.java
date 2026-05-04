@@ -7,8 +7,10 @@ import com.example.chronicdisease.dto.user.ChangePasswordRequest;
 import com.example.chronicdisease.dto.user.UserResponse;
 import com.example.chronicdisease.exception.UnauthorizedException;
 import com.example.chronicdisease.model.User;
+import com.example.chronicdisease.model.Doctor;
 import com.example.chronicdisease.repository.UserRepository;
 import com.example.chronicdisease.repository.UsersRepository;    // MySQL 仓库
+import com.example.chronicdisease.repository.DoctorRepository;
 import com.example.chronicdisease.security.JwtTokenProvider;
 import com.example.chronicdisease.service.AuthService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,6 +38,9 @@ public class AuthServiceImpl implements AuthService {
     private UserRepository userRepository;         // Mongo
 
     @Autowired
+    private DoctorRepository doctorRepository;
+
+    @Autowired
     private JwtTokenProvider jwtTokenProvider;
 
     @Autowired
@@ -50,6 +55,10 @@ public class AuthServiceImpl implements AuthService {
         if (usersRepository.existsByPhone(req.getPhone())) {
             throw new IllegalArgumentException("手机号已被注册");
         }
+        
+        String roleStr = req.getRole() != null ? req.getRole() : "ROLE_USER";
+        User.Role roleEnum = User.Role.valueOf(roleStr);
+        
         // 2) 写入 MySQL
         com.example.chronicdisease.entity.User sql = new com.example.chronicdisease.entity.User();
         sql.setUsername(req.getUsername());
@@ -58,13 +67,13 @@ public class AuthServiceImpl implements AuthService {
         sql.setEmail(req.getEmail());
         sql.setName(req.getName());
         sql.setActive(true);
-        sql.setRoles("[\"ROLE_USER\"]");
+        sql.setRoles("[\"" + roleStr + "\"]");
         LocalDateTime now = LocalDateTime.now();
         sql.setCreatedAt(now);
         sql.setUpdatedAt(now);
         usersRepository.save(sql);
-
-        // 3) 写入
+ 
+        // 3) 写入 Mongo
         User mongo = new User();
         mongo.setUsername(req.getUsername());
         mongo.setPassword(sql.getPassword());
@@ -72,13 +81,25 @@ public class AuthServiceImpl implements AuthService {
         mongo.setEmail(req.getEmail());
         mongo.setName(req.getName());
         mongo.setActive(true);
-        mongo.setRoles(Collections.singleton(User.Role.ROLE_USER));
+        mongo.setRoles(Collections.singleton(roleEnum));
         mongo.setCreatedAt(now);
         mongo.setUpdatedAt(now);
         // 保存并拿到真正的 ID
         mongo = userRepository.save(mongo);
 
-        // 4) 返回带 ID 的模型
+        // 4) 如果是医生，创建医生实体
+        if (roleEnum == User.Role.ROLE_DOCTOR) {
+            Doctor doctor = new Doctor();
+            doctor.setUserId(mongo.getId());
+            doctor.setName(mongo.getName());
+            doctor.setDepartment("General Practice"); // Default department
+            doctor.setAvailable(true);
+            doctor.setCreatedAt(now);
+            doctor.setUpdatedAt(now);
+            doctorRepository.save(doctor);
+        }
+ 
+        // 5) 返回带 ID 的模型
         return mongo;
     }
 

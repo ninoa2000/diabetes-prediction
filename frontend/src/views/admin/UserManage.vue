@@ -32,6 +32,14 @@
           <el-table-column prop="username" label="Username" min-width="150" show-overflow-tooltip></el-table-column>
           <el-table-column prop="fullName" label="Name" min-width="150" show-overflow-tooltip></el-table-column>
           <el-table-column prop="phone" label="Phone" min-width="150" show-overflow-tooltip></el-table-column>
+          <el-table-column label="Bound Doctor" min-width="180">
+            <template #default="scope">
+              <el-tag v-if="scope.row.boundDoctorName" type="info" effect="plain">
+                {{ scope.row.boundDoctorName }}
+              </el-tag>
+              <span v-else style="color: #909399; font-size: 12px;">Not Bound</span>
+            </template>
+          </el-table-column>
           <el-table-column prop="active" label="Status" width="120">
             <template #default="scope">
               <el-tag :type="scope.row.active ? 'success' : 'danger'">

@@ -42,6 +42,13 @@
           />
         </el-form-item>
         
+        <el-form-item label="Role" prop="role">
+          <el-radio-group v-model="registerForm.role">
+            <el-radio label="ROLE_USER">Patient</el-radio>
+            <el-radio label="ROLE_DOCTOR">Doctor</el-radio>
+          </el-radio-group>
+        </el-form-item>
+
         <el-form-item label="Confirm Password" prop="confirmPassword">
           <el-input
             v-model="registerForm.confirmPassword"
@@ -89,6 +96,7 @@ const registerForm = reactive({
   phone: '',
   password: '',
   confirmPassword: '',
+  role: 'ROLE_USER',
 });
 
 // Validate password match
@@ -121,6 +129,9 @@ const registerRules = reactive({
   ],
   confirmPassword: [
     { required: true, validator: validatePass, trigger: 'blur' },
+  ],
+  role: [
+    { required: true, message: 'Please select a role', trigger: 'change' },
   ],
 });
 

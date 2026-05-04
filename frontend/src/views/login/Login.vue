@@ -44,6 +44,13 @@
           <span>Don't have an account? </span>
           <router-link to="/register">Register now</router-link>
         </div>
+
+        <el-divider>Test Accounts</el-divider>
+        <div class="test-accounts">
+          <el-button size="small" @click="fillLogin('ninoa2000', 'admin123')">Patient</el-button>
+          <el-button size="small" type="success" @click="fillLogin('doctor3', 'admin123')">Doctor</el-button>
+          <el-button size="small" type="warning" @click="fillLogin('admin', 'admin123')">Admin</el-button>
+        </div>
       </el-form>
     </div>
   </div>
@@ -68,6 +75,11 @@ const loginForm = reactive({
   username: '',
   password: '',
 });
+
+const fillLogin = (username, password) => {
+  loginForm.username = username;
+  loginForm.password = password;
+};
 
 // Form validation rules
 const loginRules = reactive({
@@ -152,5 +164,18 @@ const handleLogin = async () => {
 .login-footer a {
   color: #409EFF;
   text-decoration: none;
+}
+
+.test-accounts {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+:deep(.el-divider__text) {
+  background-color: #fff;
+  font-size: 12px;
+  color: #909399;
 }
 </style>

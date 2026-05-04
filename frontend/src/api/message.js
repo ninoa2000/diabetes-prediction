@@ -28,12 +28,13 @@ export const messageService = {
    * @param {string} content - The message content
    * @returns {Promise} - The API response
    */
-  sendMessage(doctorId, content) {
+  sendMessage(doctorId, content, imageUrl = null) {
     if (!doctorId) {
       return Promise.reject(new Error('未绑定医生'));
     }
     return apiClient.post(`/send/${doctorId}`, {
-      content
+      content,
+      imageUrl
     });
   },
 

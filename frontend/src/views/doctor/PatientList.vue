@@ -33,6 +33,9 @@
                 <el-button type="success" link @click="viewPatientCases(row)">
                   View Records
                 </el-button>
+                <el-button type="warning" link @click="handleMessage(row)">
+                  Message
+                </el-button>
               </template>
             </el-table-column>
           </el-table>
@@ -79,6 +82,15 @@ const viewPatientDetail = (patient) => {
 // View patient cases
 const viewPatientCases = (patient) => {
   router.push(`/doctor/patients/${patient.id}/cases`);
+};
+
+// Message patient
+const handleMessage = (patient) => {
+  // Navigate to message list with active patient
+  router.push({
+    path: '/doctor/messages',
+    query: { patientId: patient.id, patientName: patient.name }
+  });
 };
 
 // Load patients

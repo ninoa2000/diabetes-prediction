@@ -24,6 +24,8 @@ public class UserResponse {
     private Integer age;
     private String gender;
     private boolean active;
+    private String boundDoctorId;
+    private String boundDoctorName;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 } 

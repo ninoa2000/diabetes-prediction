@@ -59,13 +59,7 @@
             <artifactId>spring-boot-starter-security</artifactId>
         </dependency>
 
-<!--        &lt;!&ndash; ✅ 热部署（开发阶段用） &ndash;&gt;-->
-<!--        <dependency>-->
-<!--            <groupId>org.springframework.boot</groupId>-->
-<!--            <artifactId>spring-boot-devtools</artifactId>-->
-<!--            <scope>runtime</scope>-->
-<!--            <optional>true</optional>-->
-<!--        </dependency>-->
+
 
         <!-- ✅ JWT 支持（分为 api/impl/jackson 三部分） -->
         <dependency>

@@ -24,6 +24,7 @@ public class MessageResponse {
     private LocalDateTime updatedAt;
     private Message.MessageType type;
     private String replyContent;
+    private String imageUrl;
     
     public static MessageResponse fromMessage(Message message) {
         return MessageResponse.builder()
@@ -38,6 +39,7 @@ public class MessageResponse {
                 .updatedAt(message.getUpdatedAt())
                 .type(message.getType())
                 .replyContent(message.getReplyContent())
+                .imageUrl(message.getImageUrl())
                 .build();
     }
 } 

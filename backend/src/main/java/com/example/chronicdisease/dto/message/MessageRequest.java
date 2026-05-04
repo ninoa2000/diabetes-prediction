@@ -15,4 +15,6 @@ public class MessageRequest {
     @NotBlank(message = "消息内容不能为空")
     @Size(min = 1, max = 1000, message = "消息长度必须在1到1000个字符之间")
     private String content;
+    
+    private String imageUrl;
 } 

@@ -6,6 +6,7 @@ import com.example.chronicdisease.dto.user.UserResponse;
 import com.example.chronicdisease.entity.User;                    // MySQL 实体
 import com.example.chronicdisease.repository.UsersRepository;   // MySQL 仓库
 import com.example.chronicdisease.repository.UserRepository;    // ★ Mongo 仓库
+import com.example.chronicdisease.repository.DoctorRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -27,6 +28,7 @@ public class AdminController {
 
     private final UsersRepository usersRepository;   // MySQL
     private final UserRepository  userRepository;    // ★ Mongo
+    private final DoctorRepository doctorRepository;
     private final PasswordEncoder passwordEncoder;
 
     /* ---------- 1. 列表 ---------- */
@@ -116,14 +118,29 @@ public class AdminController {
 
     /* ---------- DTO 映射 ---------- */
     private UserResponse toDto(User u) {
+        // 从 Mongo 查找更多信息（如绑定医生）
+        com.example.chronicdisease.model.User mongoUser = userRepository.findByUsername(u.getUsername()).orElse(null);
+        String boundDoctorId = null;
+        String boundDoctorName = null;
+        
+        if (mongoUser != null && mongoUser.getBoundDoctorId() != null) {
+            boundDoctorId = mongoUser.getBoundDoctorId();
+            // 查找医生姓名
+            boundDoctorName = doctorRepository.findById(boundDoctorId)
+                    .map(com.example.chronicdisease.model.Doctor::getName)
+                    .orElse(null);
+        }
+
         return UserResponse.builder()
                 .id(u.getId().toString())
-                .mongoId(null)              // 前端需要可自行填充
+                .mongoId(mongoUser != null ? mongoUser.getId() : null)
                 .username(u.getUsername())
                 .fullName(u.getName())
                 .phone(u.getPhone())
                 .email(u.getEmail())
                 .active(u.getActive())
+                .boundDoctorId(boundDoctorId)
+                .boundDoctorName(boundDoctorName)
                 .createdAt(u.getCreatedAt())
                 .updatedAt(u.getUpdatedAt())
                 .build();

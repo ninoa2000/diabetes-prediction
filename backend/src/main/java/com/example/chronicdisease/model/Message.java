@@ -54,4 +54,6 @@ public class Message {
     private MessageType type;
     
     private String replyContent;
+    
+    private String imageUrl;
 } 
