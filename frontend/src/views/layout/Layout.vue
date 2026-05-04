@@ -86,11 +86,7 @@
             <span>Profile</span>
           </el-menu-item>
 
-          <!-- Non-admin Password -->
-          <el-menu-item v-if="!userStore.isAdmin" index="/user/change-password">
-            <el-icon><Lock /></el-icon>
-            <span>Change Password</span>
-          </el-menu-item>
+
         </el-menu>
       </el-aside>
       
@@ -144,8 +140,7 @@ import {
   Message, 
   ChatDotRound, 
   Document, 
-  Setting,
-  Lock
+  Setting
 } from '@element-plus/icons-vue';
 
 const route = useRoute();
